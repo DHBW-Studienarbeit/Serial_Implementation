@@ -1,0 +1,6 @@
+CNN_seriell/Debug/**
+CNN_seriell/Release/**
+CNN_seriell/.settings/**
+CNN_seriell/.cproject
+CNN_seriell/.project
+/Debug/
