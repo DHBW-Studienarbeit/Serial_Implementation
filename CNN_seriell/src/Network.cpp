@@ -234,7 +234,7 @@ bool Network::forward(...)
 						}
 
 						(*node_list->at(node_index)) = ( (*(node_list->at(node_index))) + (*(bias_list->at(bias_index))) );
-						mathematisches::sigmoid(node_list->at(node_index)->get(), node_list->at(node_index)->get(),
+						mathematics::sigmoid(node_list->at(node_index)->get(), node_list->at(node_index)->get(),
 								conv_layer->getXReceptive()*conv_layer->getYReceptive());
 
 						weight_index++;
@@ -283,7 +283,7 @@ bool Network::forward(...)
 						}
 
 						(*node_list->at(node_index)) = ( (*(node_list->at(node_index))) + (*(bias_list->at(bias_index))) );
-						mathematisches::sigmoid(node_list->at(node_index)->get(), node_list->at(node_index)->get(),
+						mathematics::sigmoid(node_list->at(node_index)->get(), node_list->at(node_index)->get(),
 								conv_layer->getXReceptive()*conv_layer->getYReceptive());
 
 						weight_index++;
@@ -361,9 +361,8 @@ bool Network::forward(...)
 						}
 						temp_node_index++;
 					}
-
-					(*node_list-->at(node_index)) = (*(weight_list->at(weight_index))) * (*full_conv_matrix)
-																			+ (*(bias_list->at(bias_index)));
+					Matrix tmp = (*(weight_list->at(weight_index))) * (*full_conv_matrix);
+					(*node_list->at(node_index)) = tmp + (*(bias_list->at(bias_index)));
 
 					node_index++;
 					bias_index++;
@@ -391,9 +390,8 @@ bool Network::forward(...)
 						}
 						temp_node_index++;
 					}
-
-					(*node_list->at(node_index)) = (*(weight_list->at(weight_index))) * (*full_pool_matrix)
-																			+ (*(bias_list->at(bias_index)));
+					Matrix tmp = (*(weight_list->at(weight_index))) * (*full_pool_matrix);
+					(*node_list->at(node_index)) = tmp + (*(bias_list->at(bias_index)));
 
 					node_index++;
 					bias_index++;
@@ -401,8 +399,8 @@ bool Network::forward(...)
 				}
 				else if (layer_list->at(i-1)->getLayerType() == FULLY_CONNECTED_LAYER)
 				{
-					(*node_list->at(node_index)) = (*weight_list->at(weight_index)) * (*node_list->at(node_index-1))
-														+ (*bias_list->at(bias_index));
+					Matrix tmp = (*weight_list->at(weight_index)) * (*node_list->at(node_index-1));
+					(*node_list->at(node_index)) = tmp + (*(bias_list->at(bias_index)));
 					node_index++;
 					bias_index++;
 					weight_index++;

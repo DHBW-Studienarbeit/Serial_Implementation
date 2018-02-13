@@ -20,6 +20,7 @@
 #include "DropoutLayer.hpp"
 #include "FullyConnectedLayer.hpp"
 #include "MaxPoolingLayer.hpp"
+#include "mathematics.h"
 
 using namespace std;
 
