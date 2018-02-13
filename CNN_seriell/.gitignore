@@ -3,4 +3,7 @@ CNN_seriell/Release/**
 CNN_seriell/.settings/**
 CNN_seriell/.cproject
 CNN_seriell/.project
+CNN_seriell/build/**
+CNN_seriell/SConstruct
+CNN_seriell/.sconsign.dblite
 /Debug/
