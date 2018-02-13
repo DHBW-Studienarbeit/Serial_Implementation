@@ -16,7 +16,7 @@ Network::Network()
 	layer_list = new vector<Layer*>();
 	node_list = new vector<Matrix*>();
 	weight_list = new vector<Matrix*>();
-	node_list = new vector<Matrix*>();
+	bias_list = new vector<Matrix*>();
 }
 
 Network::~Network()
@@ -228,13 +228,13 @@ bool Network::forward(...)
 												node_list->at(node_index-1)->get(j+l, k+m));
 									}
 								}
-								float node_value = (*weight_list->at(weight_index)) * (*node_vector);
-								node_list->at(node_index)->set(j, k, node_value);
+								Matrix node_value = (*weight_list->at(weight_index)) * (*node_vector);
+								node_list->at(node_index)->set(j, k, node_value.get(0,0));
 							}
 						}
 
 						(*node_list->at(node_index)) = ( (*(node_list->at(node_index))) + (*(bias_list->at(bias_index))) );
-						mathematisches::sigmoid(node_list->at(node_index)->mat_array, node_list->at(node_index)->mat_array,
+						mathematisches::sigmoid(node_list->at(node_index)->get(), node_list->at(node_index)->get(),
 								conv_layer->getXReceptive()*conv_layer->getYReceptive());
 
 						weight_index++;
@@ -277,13 +277,13 @@ bool Network::forward(...)
 										}
 									}
 								}
-								float node_value = (weight_list->at(weight_index)) * node_vector;
-								node_list->at(node_index)->set(j, k, node_value);
+								Matrix node_value = (*weight_list->at(weight_index)) * *node_vector;
+								node_list->at(node_index)->set(j, k, node_value.get(0,0));
 							}
 						}
 
 						(*node_list->at(node_index)) = ( (*(node_list->at(node_index))) + (*(bias_list->at(bias_index))) );
-						mathematisches::sigmoid(node_list->at(node_index)->mat_array, node_list->at(node_index)->mat_array,
+						mathematisches::sigmoid(node_list->at(node_index)->get(), node_list->at(node_index)->get(),
 								conv_layer->getXReceptive()*conv_layer->getYReceptive());
 
 						weight_index++;
@@ -362,7 +362,7 @@ bool Network::forward(...)
 						temp_node_index++;
 					}
 
-					(*node_list->at(node_index)) = (*(weight_list->at(weight_index))) * (*full_conv_matrix)
+					(*node_list-->at(node_index)) = (*(weight_list->at(weight_index))) * (*full_conv_matrix)
 																			+ (*(bias_list->at(bias_index)));
 
 					node_index++;
