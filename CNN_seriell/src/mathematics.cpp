@@ -17,10 +17,9 @@ float sigmoid_once(float in)
 	return temp / (1+temp);
 }
 
-float sigmoid_derived(float in)
+float sigmoid_backward_derivated_once(float activation)
 {
-	float sig = sigmoid_once(in);
-	return sig * (1 - sig);
+	return activation * (1 - activation);
 }
 
 void sigmoid(float *in, float *out, int size)
@@ -31,12 +30,11 @@ void sigmoid(float *in, float *out, int size)
 	}
 }
 
-void sigmoid(float *in, float *out, float *derivatives, int size)
+void sigmoid_backward_derivated(float *activation, float *derivatives, int size)
 {
-	for(; size>0; size--, in++, out++, derivatives++)
+	for(; size>0; size--, activation++, derivatives++)
 	{
-		*out = sigmoid_once(*in);
-		*derivatives = (*out) * (1 - *out);
+		*derivatives = sigmoid_backward_derivated_once(*activation);
 	}
 }
 

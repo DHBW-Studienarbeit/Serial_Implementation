@@ -13,10 +13,10 @@
 namespace mathematics {
 
 float sigmoid_once(float in);
-float sigmoid_derived(float in);
+float sigmoid_backward_derivated_once(float activation);
 
 void sigmoid(float *in, float *out, int size);
-void sigmoid(float *in, float *out, float *derivatives, int size);
+void sigmoid_backward_derivated(float *activation, float *derivatives, int size);
 
 
 void softmax(float *in, float *out, int size);
