@@ -37,6 +37,8 @@ private:
 	vector<Matrix*>* node_list;
 	vector<Matrix*>* weight_list;
 	vector<Matrix*>* bias_list;
+	vector<Matrix*>* weight_delta_list;
+	vector<Matrix*>* bias_delta_list;
 
 	PictureContainer* train_picture_container;
 	PictureContainer* test_picture_container;
@@ -52,8 +54,9 @@ public:
 	float test();
 
 private:
-	bool backpropagate(float cost);
+	bool backpropagate();
 	float forward(float* labels);
+	void gradient_descent(float cost);
 
 };
 
