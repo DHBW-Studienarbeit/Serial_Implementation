@@ -46,6 +46,12 @@ Matrix::~Matrix(){
 	delete mat_array;
 }
 
+void Matrix::set_all(float* array)
+{
+	delete mat_array;
+	mat_array = array;
+}
+
 /**
  * Function to get Value on Position (n,m)
  * value range of n & m between 0 and height/length-1

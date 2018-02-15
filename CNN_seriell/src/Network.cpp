@@ -17,6 +17,8 @@ Network::Network()
 	node_list = new vector<Matrix*>();
 	weight_list = new vector<Matrix*>();
 	bias_list = new vector<Matrix*>();
+	train_picture_container = new PictureContainer("./train", 55);
+	test_picture_container = new PictureContainer("./test", 10);
 }
 
 Network::~Network()
@@ -169,17 +171,72 @@ bool Network::generate_network()
 	return true;
 }
 
-bool Network::train(...)
+bool Network::train(int batch_size, int no_iterations)
 {
-	return true;
+	int outer_loop = NO_DATA_D/batch_size;
+	float cost_sum = 0.0f;
+	bool ret_val = false;
+
+	for(int l = 0; l < no_iterations; l++)
+	{
+		for(int j = 0; j < outer_loop; j++)
+		{
+			cost_sum = 0.0f;
+			for(int i = 0; i < batch_size; i++)
+			{
+				Picture* picture = train_picture_container->get_nextpicture();
+				node_list->at(0)->set_all(picture->get_input());
+				cost_sum += forward(picture->get_output());
+			}
+			ret_val = backpropagate(cost_sum/batch_size);
+			if(ret_val == false)
+			{
+				return ret_val; /* end function if failed */
+			}
+		}
+	}
+	return ret_val;
 }
 
 float Network::test()
 {
-	return 0.0f;
+	int correct_index = 0;
+	int calculated_index = 0;
+	float max_val = 0.0f;
+	int correct_detections = 0;
+	for(int i = 0; i < NO_TEST_FILES_D; i++)
+	{
+		for(int j = 0; j < NO_PICS_PER_FILE_D; j++)
+		{
+			max_val = 0.0f;
+			Picture* picture = train_picture_container->get_nextpicture();
+			node_list->at(0)->set_all(picture->get_input());
+			forward(picture->get_output());
+
+			for(int k = 0; k < OUTPUT_SIZE; k++)
+			{
+				if(picture->get_output()[k] == 1.0f)
+				{
+					correct_index = k;
+				}
+
+				if(node_list->at(node_list->size())->get()[k] > max_val)
+				{
+					calculated_index = k;
+					max_val = node_list->at(node_list->size())->get()[k];
+				}
+			}
+
+			if(correct_index == calculated_index)
+			{
+				correct_detections++;
+			}
+		}
+	}
+	return correct_detections/(NO_PICS_PER_FILE_D*NO_TEST_FILES_D);
 }
 
-bool Network::forward(...)
+float Network::forward(float* labels)
 {
 	/* Indices to iterate through weight_list, node_list and bias_list */
 	int weight_index = 0;
@@ -293,7 +350,7 @@ bool Network::forward(...)
 				}
 				else
 				{
-					return false;
+					return -1.0f;
 				}
 				break;
 			}
@@ -333,7 +390,7 @@ bool Network::forward(...)
 				}
 				else
 				{
-					return false;
+					return -1.0f;
 				}
 				break;
 			}
@@ -407,7 +464,7 @@ bool Network::forward(...)
 				}
 				else
 				{
-					return false;
+					return -1.0f;
 				}
 				break;
 			}
@@ -417,15 +474,15 @@ bool Network::forward(...)
 			}
 			default:
 			{
-				return false;
+				return -1.0f;
 				break;
 			}
 		}
 	}
-	return true;
+	return mathematics::get_cost(node_list->at(node_list->size()-1)->get(), labels, OUTPUT_SIZE);
 }
 
-bool Network::backpropagate(...)
+bool Network::backpropagate(float cost)
 {
 	return true;
 }

@@ -21,6 +21,12 @@
 #include "FullyConnectedLayer.hpp"
 #include "MaxPoolingLayer.hpp"
 #include "mathematics.h"
+#include "PictureContainer.h"
+
+
+#define NO_DATA_D	55000
+#define NO_TEST_FILES_D	 10
+#define NO_PICS_PER_FILE_D	1000
 
 using namespace std;
 
@@ -32,18 +38,22 @@ private:
 	vector<Matrix*>* weight_list;
 	vector<Matrix*>* bias_list;
 
+	PictureContainer* train_picture_container;
+	PictureContainer* test_picture_container;
+
+
 public:
 	Network();
 	~Network();
 
 	void add_Layer(Layer* layer);
 	bool generate_network(); /* returns success of function */
-	bool train(...); /* returns success of function */
+	bool train(int batch_size, int no_iterations); /* returns success of function */
 	float test();
 
 private:
-	bool backpropagate(...);
-	bool forward(...);
+	bool backpropagate(float cost);
+	float forward(float* labels);
 
 };
 

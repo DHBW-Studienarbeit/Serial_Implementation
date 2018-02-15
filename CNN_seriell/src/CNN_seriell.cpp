@@ -10,42 +10,62 @@
 #include <string>
 #include "./testfile.h"
 #include "matrix.hpp"
+#include "Network.hpp"
+
+#define PICTURE_SIZE_D			28
+#define CONV_SIZE_1_D			5
+#define CONV_SIZE_2_D			5
+#define CONV_STEP_1_D 			1
+#define CONV_STEP_2_D			1
+#define CONV_FEATURES_1_D		60
+#define CONV_FEATURES_2_D		80
+#define MAX_POOL_SIZE_1_D		2
+#define MAX_POOL_SIZE_2_D		2
+#define FULLY_CONNECTED_SIZE_D	10
+
+#define BATCH_SIZE_D	1000
+#define NO_ITERATIONS_D 10
 
 using namespace std;
 
 int main(int argc, char **argv) {
-	string str = getString();
-	cout << str << endl; // prints Fuck off eclipse
-	Matrix a(3,5);
-	a.test();
-	a.printOut();
-	Matrix b(4,3);
-	b.test();
-	b.printOut();
-	Matrix c = a*b;
-	c.printOut();
-	a.trans();
-	a.printOut();
+	bool correct_net = false;
+	bool train_success = false;
+	float accuracy = 0.0f;
 
-	/*Matrix a(3,3);
-	a.test();
-	a.print_out();
-	Matrix b(3,3);
-	b.test();
-	b.print_out();
-	a.add(&b);
-	a.print_out();
+	Network* network = new Network();
 
-	Matrix a(3,5);
-	a.test();
-	a.print_out();
-	Matrix b(3,5);
-	b.test();
-	b.print_out();
-	Matrix c=a+b;
-	c.print_out();
-	//c.mul_skalar(3);
-	c=3*a;
-	c.print_out();*/
+	network->add_Layer((Layer*) new Input_Layer(PICTURE_SIZE_D, PICTURE_SIZE_D));
+	network->add_Layer((Layer*) new Conv_Layer(CONV_SIZE_1_D, CONV_SIZE_1_D, CONV_STEP_1_D, CONV_FEATURES_1_D));
+	network->add_Layer((Layer*) new MaxPooling_Layer(MAX_POOL_SIZE_1_D, MAX_POOL_SIZE_1_D, CONV_FEATURES_1_D));
+	network->add_Layer((Layer*) new Conv_Layer(CONV_SIZE_2_D, CONV_SIZE_2_D, CONV_STEP_2_D, CONV_FEATURES_2_D));
+	network->add_Layer((Layer*) new MaxPooling_Layer(MAX_POOL_SIZE_2_D, MAX_POOL_SIZE_2_D, CONV_FEATURES_2_D));
+	network->add_Layer((Layer*) new FullyConnected_Layer(FULLY_CONNECTED_SIZE_D));
+
+	std::cout << "Generate CNN..." << std::endl;
+
+	correct_net = network->generate_network();
+	if(correct_net)
+	{
+		std::cout << "Generation was successful!" << std::endl;
+		train_success = network->train(BATCH_SIZE_D, NO_ITERATIONS_D);
+	}
+	else
+	{
+		std::cout<< "Bad network configuration! Program ends!" << std::endl;
+	}
+
+	if(train_success)
+	{
+		std::cout << "Training finished! Start Test..." << std::endl;
+		accuracy = network->test();
+		std::cout << "Accuracy: " << accuracy << std::endl;
+	}
+	else
+	{
+		std::cout << "Training failed!" << std::endl;
+	}
+
+
 	return 0;
 }
