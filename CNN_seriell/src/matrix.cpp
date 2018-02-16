@@ -52,6 +52,15 @@ void Matrix::set_all(float* array)
 	mat_array = array;
 }
 
+void Matrix::set_all_equal(float value)
+{
+	for(int m=0; m<height; m++){
+		for(int n=0; n<length; n++){
+			set(n,m,value);
+		}
+	}
+}
+
 /**
  * Function to get Value on Position (n,m)
  * value range of n & m between 0 and height/length-1

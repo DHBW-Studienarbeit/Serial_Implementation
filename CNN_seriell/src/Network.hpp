@@ -37,12 +37,14 @@ private:
 	vector<Matrix*>* node_list;
 	vector<Matrix*>* weight_list;
 	vector<Matrix*>* bias_list;
-	vector<Matrix*>* weight_delta_list;
-	vector<Matrix*>* bias_delta_list;
+	vector<Matrix*>* node_deriv_list;
+	vector<Matrix*>* weight_deriv_list;
+	vector<Matrix*>* bias_deriv_list;
 
 	PictureContainer* train_picture_container;
 	PictureContainer* test_picture_container;
 
+	void reset_backprop_state(void);
 
 public:
 	Network();

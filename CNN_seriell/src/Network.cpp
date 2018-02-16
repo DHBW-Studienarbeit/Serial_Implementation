@@ -17,8 +17,9 @@ Network::Network()
 	node_list = new vector<Matrix*>();
 	weight_list = new vector<Matrix*>();
 	bias_list = new vector<Matrix*>();
-	weight_delta_list = new vector<Matrix*>();
-	bias_delta_list = new vector<Matrix*>();
+	node_deriv_list = new vector<Matrix*>();
+	weight_deriv_list = new vector<Matrix*>();
+	bias_deriv_list = new vector<Matrix*>();
 	train_picture_container = new PictureContainer("./train", 55);
 	test_picture_container = new PictureContainer("./test", 10);
 }
@@ -33,22 +34,28 @@ Network::~Network()
 	for(unsigned int i = 0; i < layer_list->size(); i++)
 	{
 		delete node_list->at(i);
+		delete node_deriv_list->at(i);
 	}
 
 	for(unsigned int i = 0; i < layer_list->size(); i++)
 	{
 		delete weight_list->at(i);
+		delete weight_deriv_list->at(i);
 	}
 
 	for(unsigned int i = 0; i < layer_list->size(); i++)
 	{
 		delete bias_list->at(i);
+		delete bias_deriv_list->at(i);
 	}
 
 	delete layer_list;
 	delete node_list;
 	delete weight_list;
 	delete bias_list;
+	delete node_deriv_list;
+	delete weight_deriv_list;
+	delete bias_deriv_list;
 }
 
 void Network::add_Layer(Layer* layer)
@@ -74,8 +81,7 @@ bool Network::generate_network()
 			{
 				Input_Layer* input_layer = (Input_Layer*) layer;
 				node_list->push_back(new Matrix(input_layer->getRows(),input_layer->getCols()));
-				weight_delta_list->push_back(new Matrix(input_layer->getRows(),input_layer->getCols()));
-				bias_delta_list->push_back(new Matrix(input_layer->getRows(),input_layer->getCols()));
+				node_deriv_list->push_back(new Matrix(input_layer->getRows(),input_layer->getCols()));
 				break;
 			}
 			case CONV_LAYER:
@@ -96,8 +102,9 @@ bool Network::generate_network()
 					for (int i = 0; i < conv_layer->getNoFeatureMaps(); i++)
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
-						weight_delta_list->push_back(new Matrix(dim_y, dim_x));
-						bias_delta_list->push_back(new Matrix(dim_y, dim_x));
+						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
+						weight_deriv_list->push_back(new Matrix(dim_y, dim_x));
+						bias_deriv_list->push_back(new Matrix(dim_y, dim_x));
 						weight_list->push_back(new Matrix(conv_layer->getXSize(), conv_layer->getYSize()));
 						bias_list->push_back(new Matrix(dim_y, dim_x));
 					}
@@ -119,8 +126,9 @@ bool Network::generate_network()
 					for (int i = 0; i < conv_layer->getNoFeatureMaps(); i++)
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
-						weight_delta_list->push_back(new Matrix(dim_y, dim_x));
-						bias_delta_list->push_back(new Matrix(dim_y, dim_x));
+						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
+						weight_deriv_list->push_back(new Matrix(dim_y, dim_x));
+						bias_deriv_list->push_back(new Matrix(dim_y, dim_x));
 						weight_list->push_back(new Matrix(conv_layer->getXSize(), conv_layer->getYSize()));
 						bias_list->push_back(new Matrix(dim_y, dim_x));
 					}
@@ -151,8 +159,7 @@ bool Network::generate_network()
 					for (int i = 0; i < prev_no_features; i++)
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
-						weight_delta_list->push_back(new Matrix(dim_y, dim_x));
-						bias_delta_list->push_back(new Matrix(dim_y, dim_x));
+						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
 					}
 				}
 				else
@@ -164,8 +171,9 @@ bool Network::generate_network()
 			case FULLY_CONNECTED_LAYER:
 			{
 				node_list->push_back(new Matrix(layer->getSize(), 1));
-				weight_delta_list->push_back(new Matrix(layer->getSize(), 1));
-				bias_delta_list->push_back(new Matrix(layer->getSize(), 1));
+				node_deriv_list->push_back(new Matrix(layer->getSize(), 1));
+				weight_deriv_list->push_back(new Matrix(layer->getSize(), 1));
+				bias_deriv_list->push_back(new Matrix(layer->getSize(), 1));
 				weight_list->push_back(new Matrix(layer->getSize(),layer_list->at(i-1)->getSize()));
 				bias_list->push_back(new Matrix(layer->getSize(), 1));
 				break;
@@ -194,6 +202,7 @@ bool Network::train(int batch_size, int no_iterations)
 		for(int j = 0; j < outer_loop; j++)
 		{
 			cost_sum = 0.0f;
+			reset_backprop_state();
 			for(int i = 0; i < batch_size; i++)
 			{
 				Picture* picture = train_picture_container->get_nextpicture();
@@ -497,6 +506,56 @@ float Network::forward(float* labels)
 
 bool Network::backpropagate()
 {
+	/* Indices to iterate backwards through weight_list, node_list and bias_list */
+	// derivation indexes are equal to corresponding indexes
+	int weight_index = weight_list->size()-1;
+	int bias_index = bias_list->size()-1;
+	int node_index = node_list->size()-1;
+	// number of layers
+	int no_layers = layer_list->size();
+
+	// prepare derivation of last layer's activation
+	//TODO: 
+
+	// actual backpropagation
+	for(int i = no_layers-1; i > 0; i--)
+	{
+		switch (layer_list->at(i)->getLayerType())
+		{
+			case INPUT_LAYER:
+				//input layer is ignored
+				break;
+			case POOLING_LAYER:
+				node_index--;
+				layer_list->at(i)->backpropagate(node_list->at(node_index-1),
+												node_list->at(node_index),
+												node_deriv_list->at(node_index-1),
+												node_deriv_list->at(node_index),
+												NULL,
+												NULL,
+												NULL,
+												NULL );
+				break;
+			case FULLY_CONNECTED_LAYER:
+			case CONV_LAYER:
+				node_index--;
+				weight_index--;
+				bias_index--;
+				layer_list->at(i)->backpropagate(node_list->at(node_index-1),
+												node_list->at(node_index),
+												node_deriv_list->at(node_index-1),
+												node_deriv_list->at(node_index),
+												weight_list->at(weight_index),
+												bias_list->at(bias_index),
+												weight_deriv_list->at(weight_index),
+												bias_deriv_list->at(bias_index) );
+				break;
+			case DROPOUT_LAYER:
+				break;
+		}
+	}
+
+
 	return true;
 }
 
@@ -505,5 +564,12 @@ void Network::gradient_descent(float cost)
 
 }
 
-
-
+void Network::reset_backprop_state(void)
+{
+	int no_layers = weight_deriv_list->size();
+	for(int i = 0; i < no_layers; i++)
+	{
+		weight_deriv_list->at(i)->set_all_equal(0.0);
+		bias_deriv_list->at(i)->set_all_equal(0.0);
+	}
+}

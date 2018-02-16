@@ -16,3 +16,14 @@ Dropout_Layer::~Dropout_Layer() {
 	// TODO Auto-generated destructor stub
 }
 
+void Dropout_Layer::backpropagate( Matrix* inputs,
+							Matrix* activations,
+							Matrix* input_derivations,
+							Matrix* activation_derivations,
+							Matrix* weights,
+							Matrix* biases,
+							Matrix* weight_derivations,
+							Matrix* bias_derivations )
+{
+
+}

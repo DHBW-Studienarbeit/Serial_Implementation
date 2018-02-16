@@ -23,6 +23,7 @@ public:
 	float* get();
 	float get(int n,int m);
 	void set(int n, int m, float value);
+	void set_all_equal(float value);
 	void set_all(float* array);
 
 private:
