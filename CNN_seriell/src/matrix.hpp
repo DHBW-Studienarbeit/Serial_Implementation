@@ -11,7 +11,7 @@
 class Matrix
 {
 public:
-	Matrix(int height, int length, );
+	Matrix(int height, int length);
 	Matrix(int height, int length, float *array);
 	~Matrix();
 	void random();

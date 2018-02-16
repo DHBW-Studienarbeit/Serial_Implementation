@@ -70,7 +70,7 @@ float get_cost(float *output, float *labels, int size)
 	return cross_entropy(normalized, labels, size);
 }
 
-float get_cost_derivatives(float *output, float *labels, float *derivatives, int size)
+void get_cost_derivatives(float *output, float *labels, float *derivatives, int size)
 {
 	for(; size>0; size--, output++, labels++, derivatives++)
 	{

@@ -23,7 +23,7 @@ void softmax(float *in, float *out, int size);
 float cross_entropy(float *calculated, float *expected, int size);
 
 float get_cost(float *output, float *labels, int size);
-float get_cost_derivatives(float *output, float *labels, float *derivatives, int size);
+void get_cost_derivatives(float *output, float *labels, float *derivatives, int size);
 
 }
 
