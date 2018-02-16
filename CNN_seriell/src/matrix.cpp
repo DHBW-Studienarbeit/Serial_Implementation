@@ -20,7 +20,7 @@
  * <param>int length - length of Matrix</param>
  * <param>int height - height of Matrix</param>
  */
-Matrix::Matrix(int length, int height){
+Matrix::Matrix(int height, int length){
 	this->mat_array=new float[length*height];
 	this->length=length; //n
 	this->height=height; //m
@@ -33,7 +33,7 @@ Matrix::Matrix(int length, int height){
  * <param>int height - height of Matrix</param>
  * <param>float *array - Pointer to Array with Values
  */
-Matrix::Matrix(int length, int height, float *array){
+Matrix::Matrix(int height, int length, float *array){
 	this->mat_array=array;
 	this->length=length; //n
 	this->height=height; //m
@@ -68,7 +68,7 @@ void Matrix::set_all_equal(float value)
  * <param>int m - Row-Index</param>
  * <return>float - Value at position in Matrix</return>
  */
-float Matrix::get(int n, int m){
+float Matrix::get(int m, int n){
 	return this->mat_array[m*(this->length) + n];
 }
 
@@ -103,7 +103,7 @@ int Matrix::getLength(){
  * <param>int m - Row-Index</param>
  * <param>float value - Value to be set</param>
  */
-void Matrix::set(int n, int m, float value){
+void Matrix::set(int m, int n, float value){
 	this->mat_array[m*(this->length) + n] = value;
 }
 

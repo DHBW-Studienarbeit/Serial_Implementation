@@ -11,8 +11,8 @@
 class Matrix
 {
 public:
-	Matrix(int length, int height);
-	Matrix(int length, int height, float *array);
+	Matrix(int height, int length, );
+	Matrix(int height, int length, float *array);
 	~Matrix();
 	void random();
 	void test();
@@ -21,8 +21,8 @@ public:
 	int getLength();
 	int getHeight();
 	float* get();
-	float get(int n,int m);
-	void set(int n, int m, float value);
+	float get(int m,int n);
+	void set(int m, int n, float value);
 	void set_all_equal(float value);
 	void set_all(float* array);
 
@@ -35,4 +35,5 @@ Matrix operator+(Matrix &a, Matrix &b);
 Matrix operator-(Matrix &a, Matrix &b);
 Matrix operator*(int a, Matrix &b);
 Matrix operator*(Matrix &a, Matrix &b);
+
 #endif /* MATRIX_HPP_ */
