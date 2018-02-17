@@ -65,9 +65,13 @@ float cross_entropy(float *calculated, float *expected, int size)
 
 float get_cost(float *output, float *labels, int size)
 {
-	float normalized[size];
+	float *normalized;
+	float ret;
+	normalized = new float[size];
 	softmax(output, normalized, size);
-	return cross_entropy(normalized, labels, size);
+	ret = cross_entropy(normalized, labels, size);
+	delete[] normalized;
+	return ret;
 }
 
 void get_cost_derivatives(float *output, float *labels, float *derivatives, int size)

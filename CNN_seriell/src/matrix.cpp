@@ -43,12 +43,12 @@ Matrix::Matrix(int height, int length, float *array){
  * Default Destructor of Class Matrix
  */
 Matrix::~Matrix(){
-	delete mat_array;
+	delete[] mat_array;
 }
 
 void Matrix::set_all(float* array)
 {
-	delete mat_array;
+	delete[] mat_array;
 	mat_array = array;
 }
 

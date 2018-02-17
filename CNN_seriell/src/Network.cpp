@@ -311,6 +311,7 @@ float Network::forward(float* labels)
 								}
 								Matrix node_value = (*weight_list->at(weight_index)) * (*node_vector);
 								node_list->at(node_index)->set(j, k, node_value.get(0,0));
+								delete node_vector;
 							}
 						}
 
