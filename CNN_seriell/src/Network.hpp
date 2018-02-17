@@ -56,7 +56,7 @@ public:
 	float test();
 
 private:
-	bool backpropagate();
+	bool backpropagate(float* labels);
 	float forward(float* labels);
 	void gradient_descent(float cost);
 

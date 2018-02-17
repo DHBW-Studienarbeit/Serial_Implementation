@@ -210,7 +210,7 @@ bool Network::train(int batch_size, int no_iterations)
 				Picture* picture = train_picture_container->get_nextpicture();
 				node_list->at(0)->copy_all(picture->get_input());
 				cost_sum += forward(picture->get_output());
-				ret_val = backpropagate();
+				ret_val = backpropagate(picture->get_output());
 				if(ret_val == false)
 				{
 					return ret_val; /* end function if failed */
@@ -506,7 +506,7 @@ float Network::forward(float* labels)
 	return mathematics::get_cost(node_list->at(node_list->size()-1)->get(), labels, OUTPUT_SIZE);
 }
 
-bool Network::backpropagate()
+bool Network::backpropagate(float* labels)
 {
 	/* Indices to iterate backwards through weight_list, node_list and bias_list */
 	// derivation indexes are equal to corresponding indexes
@@ -517,7 +517,10 @@ bool Network::backpropagate()
 	int no_layers = layer_list->size();
 
 	// prepare derivation of last layer's activation
-	//TODO:
+	mathematics::get_cost_derivatives(	node_list->at(node_index)->get(),
+										labels,
+										node_deriv_list->at(node_index)->get(),
+										layer_list->at(no_layers-1)->getSize() );
 
 	// actual backpropagation
 	for(int i = no_layers-1; i > 0; i--)
