@@ -566,6 +566,23 @@ bool Network::backpropagate(float* labels)
 
 void Network::gradient_descent(float cost)
 {
+	//assuming sizes of weight_list and bias_list are equal
+	int no_weighted_layers = weight_list->size()-1;
+	for(int i =0; i < no_weighted_layers; i++)
+	{
+		Matrix *weights = weight_list->at(i);
+		Matrix *biases = bias_list->at(i);
+		Matrix *weights_deriv = weight_deriv_list->at(i);
+		Matrix *biases_deriv = bias_deriv_list->at(i);
+		for(int m=0; m<weights->getHeight(); m++)
+		{
+			for(int n=0; n<weights->getLength(); n++)
+			{
+				weights->set(m, n, weights->get(m,n) - weights_deriv->get(m,n)*LEARNING_RATE);
+			}
+			biases->set(m, 0, biases->get(m,0) - biases_deriv->get(m,0)*LEARNING_RATE);
+		}
+	}
 
 }
 

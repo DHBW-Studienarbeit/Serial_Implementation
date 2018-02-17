@@ -27,6 +27,7 @@
 #define NO_DATA_D	55000
 #define NO_TEST_FILES_D	 10
 #define NO_PICS_PER_FILE_D	1000
+#define LEARNING_RATE 0.5
 
 using namespace std;
 
