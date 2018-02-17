@@ -19,7 +19,7 @@ private:
 	int no_features;
 public:
 	MaxPooling_Layer(int x_receptive, int y_receptive, int no_features);
-	~MaxPooling_Layer();
+	virtual ~MaxPooling_Layer();
 
 	int  getNoFeatures();
 	int  getXSize();
@@ -37,7 +37,7 @@ public:
 								Matrix* biases,
 								Matrix* weight_derivations,
 								Matrix* bias_derivations ) override;
-								
+
 };
 
 #endif /* MAXPOOLINGLAYER_HPP_ */

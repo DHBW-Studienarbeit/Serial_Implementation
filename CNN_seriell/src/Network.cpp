@@ -234,7 +234,7 @@ float Network::test()
 		{
 			max_val = 0.0f;
 			Picture* picture = train_picture_container->get_nextpicture();
-			node_list->at(0)->set_all(picture->get_input());
+			node_list->at(0)->copy_all(picture->get_input());
 			forward(picture->get_output());
 
 			for(int k = 0; k < OUTPUT_SIZE; k++)
@@ -283,7 +283,7 @@ float Network::forward(float* labels)
 			{
 				if(layer_list->at(i-1)->getLayerType() == INPUT_LAYER)
 				{
-					Input_Layer* input_layer = (Input_Layer*) layer_list->at(i-1);
+//					Input_Layer* input_layer = (Input_Layer*) layer_list->at(i-1);
 					Conv_Layer*  conv_layer  = (Conv_Layer*) layer_list->at(i);
 //					int input_x_size = input_layer->getCols();
 //					int input_y_size = input_layer->getRows();

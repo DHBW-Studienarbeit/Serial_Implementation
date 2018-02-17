@@ -13,7 +13,7 @@
 class FullyConnected_Layer: public Layer {
 public:
 	FullyConnected_Layer(int size);
-	~FullyConnected_Layer();
+	virtual ~FullyConnected_Layer();
 
 	virtual void backpropagate( Matrix* inputs,
 								Matrix* activations,
@@ -23,7 +23,7 @@ public:
 								Matrix* biases,
 								Matrix* weight_derivations,
 								Matrix* bias_derivations ) override;
-								
+
 };
 
 #endif /* FULLYCONNECTEDLAYER_HPP_ */

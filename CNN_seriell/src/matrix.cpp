@@ -186,17 +186,17 @@ void Matrix::trans(){
  * <return> Matrix </return>
  */
 Matrix operator+ (Matrix &a, Matrix &b){
-	Matrix *c = new Matrix(a.getHeight(), a.getLength());
+	Matrix c = Matrix(a.getHeight(), a.getLength());
 	if(a.getLength() == b.getLength() && a.getHeight() == b.getHeight()){
-		for(int m=0; m<c->getHeight(); m++){
-			for(int n=0; n<c->getLength(); n++){
+		for(int m=0; m<c.getHeight(); m++){
+			for(int n=0; n<c.getLength(); n++){
 				//addition of both arguments
-				c->set(m, n, a.get(m,n) + b.get(m, n));
+				c.set(m, n, a.get(m,n) + b.get(m, n));
 			}
 		}
-		return *c;
+		return c;
 	}else{
-		return *c;
+		return c;
 	}
 }
 
@@ -208,17 +208,17 @@ Matrix operator+ (Matrix &a, Matrix &b){
  * <return> Matrix </return>
  */
 Matrix operator- (Matrix &a, Matrix &b){
-	Matrix *c = new Matrix(a.getHeight(), a.getLength());
+	Matrix c = Matrix(a.getHeight(), a.getLength());
 	if(a.getLength() == b.getLength() && a.getHeight() == b.getHeight()){
-		for(int m=0; m<c->getHeight(); m++){
-			for(int n=0; n<c->getLength(); n++){
+		for(int m=0; m<c.getHeight(); m++){
+			for(int n=0; n<c.getLength(); n++){
 				//addition of both arguments
-				c->set(m, n, a.get(m,n) - b.get(m, n));
+				c.set(m, n, a.get(m,n) - b.get(m, n));
 			}
 		}
-		return *c;
+		return c;
 	}else{
-		return *c;
+		return c;
 	}
 }
 
@@ -230,14 +230,14 @@ Matrix operator- (Matrix &a, Matrix &b){
  * <return> Matrix </return>
  */
 Matrix operator* (int a, Matrix &b){
-	Matrix *c = new Matrix(b.getHeight(), b.getLength());
-	for(int m=0; m < c->getHeight(); m++){
-		for(int n=0; n < c->getLength(); n++){
+	Matrix c = Matrix(b.getHeight(), b.getLength());
+	for(int m=0; m < c.getHeight(); m++){
+		for(int n=0; n < c.getLength(); n++){
 			//addition of both arguments
-			c->set(m, n, a * b.get(m,n) );
+			c.set(m, n, a * b.get(m,n) );
 		}
 	}
-	return *c;
+	return c;
 }
 
 /* Operator-Function for multiplication of 2 Matrixes
@@ -263,25 +263,25 @@ Matrix operator* (int a, Matrix &b){
  *
  */
 Matrix operator* (Matrix &a, Matrix &b){
-	Matrix *c = new Matrix(a.getHeight(), b.getLength());
+	Matrix c = Matrix(a.getHeight(), b.getLength());
 	if(a.getLength() == b.getHeight()){
 
 		//Alle Elemente der neuen Matrix durchgehen
-		for(int m=0; m < c->getHeight(); m++){
-			for(int n=0; n < c->getLength(); n++){
+		for(int m=0; m < c.getHeight(); m++){
+			for(int n=0; n < c.getLength(); n++){
 
 				float value=0;
 				//Zeilenweise durchgehen
 				for(int i=0; i<a.getLength(); i++){
 					value += (a.get(m, i) * b.get(i, n));
 				}
-				c->set(m, n, value);
+				c.set(m, n, value);
 
 			}
 		}
-		return *c;
+		return c;
 
 	}else{
-		return *c;
+		return c;
 	}
 }

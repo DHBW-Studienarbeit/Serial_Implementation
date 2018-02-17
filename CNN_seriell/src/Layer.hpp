@@ -24,7 +24,7 @@ private:
 public:
 	Layer(int size, LAYER_TYPE layer_type);
 	Layer(LAYER_TYPE layer_type);
-	~Layer();
+	virtual ~Layer();
 
 	LAYER_TYPE getLayerType();
 	int getSize();

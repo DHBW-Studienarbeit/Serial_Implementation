@@ -17,7 +17,7 @@ private:
 
 public:
 	Input_Layer(int rows, int cols);
-	~Input_Layer();
+	virtual ~Input_Layer();
 	int getRows();
 	int getCols();
 

@@ -21,7 +21,7 @@ private:
 	int y_size;
 public:
 	Conv_Layer(int x_receptive, int y_receptive, int step_size, int no_feature_maps);
-	~Conv_Layer();
+	virtual ~Conv_Layer();
 	int  getXSize();
 	int  getYSize();
 	void setXSize(int size);
