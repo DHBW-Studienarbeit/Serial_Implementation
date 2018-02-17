@@ -62,8 +62,5 @@ private:
 
 };
 
-namespace mathematisches {
-	void sigmoid(float* in, float* out, int size);
-}
 
 #endif /* NETWORK_HPP_ */

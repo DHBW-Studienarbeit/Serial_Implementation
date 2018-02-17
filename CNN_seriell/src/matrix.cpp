@@ -52,11 +52,22 @@ void Matrix::set_all(float* array)
 	mat_array = array;
 }
 
+void Matrix::copy_all(float* array)
+{
+	int i = 0;
+	for(int m=0; m<height; m++){
+		for(int n=0; n<length; n++){
+			set(m,n,array[i]);
+			i++;
+		}
+	}
+}
+
 void Matrix::set_all_equal(float value)
 {
 	for(int m=0; m<height; m++){
 		for(int n=0; n<length; n++){
-			set(n,m,value);
+			set(m,n,value);
 		}
 	}
 }
@@ -114,7 +125,7 @@ void Matrix::printOut(){
 	for(int m=0; m<height; m++){
 		std::cout << std::endl;
 		for(int n=0; n<length; n++){
-				std::cout << get(n,m) << "  ";
+				std::cout << get(m,n) << "  ";
 		}
 	}
 	std::cout << std::endl << std::endl;
@@ -129,7 +140,7 @@ void Matrix::test(){
 		for(int n=0; n<length; n++){
 
 			//generate random number on position [m][n]
-			set(n,m,n);
+			set(m,n,n);
 		}
 	}
 }
@@ -142,7 +153,7 @@ void Matrix::random(){
 		for(int n=0; n<length; n++){
 
 			//generate random number on position [m][n]
-			set(n ,m , static_cast <float> (rand()) / (static_cast <float> (RAND_MAX)));
+			set(m ,n , static_cast <float> (rand()) / (static_cast <float> (RAND_MAX)));
 		}
 	}
 }
@@ -157,7 +168,7 @@ void Matrix::trans(){
 	for(int m=0; m<height; m++){
 		for(int n=0; n<length; n++){
 			//addition of both arguments
-			new_data[n*height+m]=get(n,m);
+			new_data[m*height+n]=get(m,n);
 		}
 	}
 	delete mat_array;
@@ -175,12 +186,12 @@ void Matrix::trans(){
  * <return> Matrix </return>
  */
 Matrix operator+ (Matrix &a, Matrix &b){
-	Matrix *c = new Matrix(a.getLength(), a.getHeight());
+	Matrix *c = new Matrix(a.getHeight(), a.getLength());
 	if(a.getLength() == b.getLength() && a.getHeight() == b.getHeight()){
 		for(int m=0; m<c->getHeight(); m++){
 			for(int n=0; n<c->getLength(); n++){
 				//addition of both arguments
-				c->set(n, m, a.get(n,m) + b.get(n, m));
+				c->set(m, n, a.get(m,n) + b.get(m, n));
 			}
 		}
 		return *c;
@@ -197,12 +208,12 @@ Matrix operator+ (Matrix &a, Matrix &b){
  * <return> Matrix </return>
  */
 Matrix operator- (Matrix &a, Matrix &b){
-	Matrix *c = new Matrix(a.getLength(), a.getHeight());
+	Matrix *c = new Matrix(a.getHeight(), a.getLength());
 	if(a.getLength() == b.getLength() && a.getHeight() == b.getHeight()){
 		for(int m=0; m<c->getHeight(); m++){
 			for(int n=0; n<c->getLength(); n++){
 				//addition of both arguments
-				c->set(n, m, a.get(n,m) - b.get(n, m));
+				c->set(m, n, a.get(m,n) - b.get(m, n));
 			}
 		}
 		return *c;
@@ -219,11 +230,11 @@ Matrix operator- (Matrix &a, Matrix &b){
  * <return> Matrix </return>
  */
 Matrix operator* (int a, Matrix &b){
-	Matrix *c = new Matrix(b.getLength(), b.getHeight());
+	Matrix *c = new Matrix(b.getHeight(), b.getLength());
 	for(int m=0; m < c->getHeight(); m++){
 		for(int n=0; n < c->getLength(); n++){
 			//addition of both arguments
-			c->set(n, m, a * b.get(n,m) );
+			c->set(m, n, a * b.get(m,n) );
 		}
 	}
 	return *c;
@@ -252,7 +263,7 @@ Matrix operator* (int a, Matrix &b){
  *
  */
 Matrix operator* (Matrix &a, Matrix &b){
-	Matrix *c = new Matrix(b.getLength(), a.getHeight());
+	Matrix *c = new Matrix(a.getHeight(), b.getLength());
 	if(a.getLength() == b.getHeight()){
 
 		//Alle Elemente der neuen Matrix durchgehen
@@ -262,9 +273,9 @@ Matrix operator* (Matrix &a, Matrix &b){
 				float value=0;
 				//Zeilenweise durchgehen
 				for(int i=0; i<a.getLength(); i++){
-					value += (a.get(i, m) * b.get(n, i));
+					value += (a.get(m, i) * b.get(i, n));
 				}
-				c->set(n, m, value);
+				c->set(m, n, value);
 
 			}
 		}

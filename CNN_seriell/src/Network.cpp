@@ -161,6 +161,8 @@ bool Network::generate_network()
 						node_list->push_back(new Matrix(dim_y, dim_x));
 						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
 					}
+
+					pooling_layer->setSize(dim_x*dim_y);
 				}
 				else
 				{
@@ -206,7 +208,7 @@ bool Network::train(int batch_size, int no_iterations)
 			for(int i = 0; i < batch_size; i++)
 			{
 				Picture* picture = train_picture_container->get_nextpicture();
-				node_list->at(0)->set_all(picture->get_input());
+				node_list->at(0)->copy_all(picture->get_input());
 				cost_sum += forward(picture->get_output());
 				ret_val = backpropagate();
 				if(ret_val == false)
@@ -515,7 +517,7 @@ bool Network::backpropagate()
 	int no_layers = layer_list->size();
 
 	// prepare derivation of last layer's activation
-	//TODO: 
+	//TODO:
 
 	// actual backpropagation
 	for(int i = no_layers-1; i > 0; i--)

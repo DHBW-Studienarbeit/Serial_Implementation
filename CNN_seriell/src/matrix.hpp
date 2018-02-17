@@ -24,6 +24,7 @@ public:
 	float get(int m,int n);
 	void set(int m, int n, float value);
 	void set_all_equal(float value);
+	void copy_all(float* array);
 	void set_all(float* array);
 
 private:
