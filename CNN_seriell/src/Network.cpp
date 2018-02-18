@@ -103,9 +103,9 @@ bool Network::generate_network()
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
 						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						weight_deriv_list->push_back(new Matrix(dim_y, dim_x));
+						weight_deriv_list->push_back(conv_layer->getXReceptive(), conv_layer->getYReceptive());
 						bias_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						weight_list->push_back(new Matrix(conv_layer->getXSize(), conv_layer->getYSize()));
+						weight_list->push_back(new Matrix(conv_layer->getXReceptive(), conv_layer->getYReceptive()));
 						bias_list->push_back(new Matrix(dim_y, dim_x));
 					}
 					conv_layer->setSize(conv_layer->getNoFeatureMaps()*dim_x*dim_y);
@@ -162,7 +162,7 @@ bool Network::generate_network()
 						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
 					}
 
-					pooling_layer->setSize(dim_x*dim_y);
+					pooling_layer->setSize(dim_x*dim_y*prev_no_features);
 				}
 				else
 				{
@@ -532,7 +532,7 @@ bool Network::backpropagate(float* labels)
 				//input layer is ignored
 				break;
 			case POOLING_LAYER:
-				node_index--;
+
 				layer_list->at(i)->backpropagate(node_list->at(node_index-1),
 												node_list->at(node_index),
 												node_deriv_list->at(node_index-1),
@@ -541,12 +541,16 @@ bool Network::backpropagate(float* labels)
 												NULL,
 												NULL,
 												NULL );
+				node_index--;
+
 				break;
 			case FULLY_CONNECTED_LAYER:
+
+
+
+				break;
 			case CONV_LAYER:
-				node_index--;
-				weight_index--;
-				bias_index--;
+
 				layer_list->at(i)->backpropagate(node_list->at(node_index-1),
 												node_list->at(node_index),
 												node_deriv_list->at(node_index-1),
@@ -555,13 +559,16 @@ bool Network::backpropagate(float* labels)
 												bias_list->at(bias_index),
 												weight_deriv_list->at(weight_index),
 												bias_deriv_list->at(bias_index) );
+				node_index--;
+				weight_index--;
+				bias_index--;
 				break;
+
 			case DROPOUT_LAYER:
+				//not implemented
 				break;
 		}
 	}
-
-
 	return true;
 }
 
