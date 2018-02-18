@@ -99,14 +99,20 @@ bool Network::generate_network()
 					conv_layer->setXSize(dim_x);
 					conv_layer->setYSize(dim_y);
 
+					// added on 2018-02-18
+					weight_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()));
+					weight_deriv_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()));
+					bias_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), 1));
+					bias_deriv_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), 1));
+
 					for (int i = 0; i < conv_layer->getNoFeatureMaps(); i++)
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
 						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						weight_deriv_list->push_back(conv_layer->getXReceptive(), conv_layer->getYReceptive());
-						bias_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						weight_list->push_back(new Matrix(conv_layer->getXReceptive(), conv_layer->getYReceptive()));
-						bias_list->push_back(new Matrix(dim_y, dim_x));
+						//weight_deriv_list->push_back(new Matrix(conv_layer->getXReceptive(), conv_layer->getYReceptive()));
+						//bias_deriv_list->push_back(new Matrix(dim_y, dim_x));
+						//weight_list->push_back(new Matrix(conv_layer->getXReceptive(), conv_layer->getYReceptive()));
+						//bias_list->push_back(new Matrix(dim_y, dim_x));
 					}
 					conv_layer->setSize(conv_layer->getNoFeatureMaps()*dim_x*dim_y);
 				}
@@ -123,14 +129,21 @@ bool Network::generate_network()
 					conv_layer->setXSize(dim_x);
 					conv_layer->setYSize(dim_y);
 
+					// added on 2018-02-18
+					int prev_no_feat = last_layer->getNoFeatures();
+					weight_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()*prev_no_feat));
+					weight_deriv_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()*prev_no_feat));
+					bias_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), 1));
+					bias_deriv_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), 1));
+
 					for (int i = 0; i < conv_layer->getNoFeatureMaps(); i++)
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
 						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						weight_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						bias_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						weight_list->push_back(new Matrix(conv_layer->getXSize(), conv_layer->getYSize()));
-						bias_list->push_back(new Matrix(dim_y, dim_x));
+						//weight_deriv_list->push_back(new Matrix(conv_layer->getXReceptive(), conv_layer->getYReceptive()));
+						//bias_deriv_list->push_back(new Matrix(dim_y, dim_x));
+						//weight_list->push_back(new Matrix(conv_layer->getXReceptive(), conv_layer->getYReceptive()));
+						//bias_list->push_back(new Matrix(dim_y, dim_x));
 					}
 
 					conv_layer->setSize(conv_layer->getNoFeatureMaps()*dim_x*dim_y);
@@ -283,53 +296,46 @@ float Network::forward(float* labels)
 			{
 				if(layer_list->at(i-1)->getLayerType() == INPUT_LAYER)
 				{
-//					Input_Layer* input_layer = (Input_Layer*) layer_list->at(i-1);
 					Conv_Layer*  conv_layer  = (Conv_Layer*) layer_list->at(i);
-//					int input_x_size = input_layer->getCols();
-//					int input_y_size = input_layer->getRows();
 					int x_steps = conv_layer->getXSize();
 					int y_steps = conv_layer->getYSize();
 					int no_feature_maps = conv_layer->getNoFeatureMaps();
 					int x_receptive = conv_layer->getXReceptive();
 					int y_receptive = conv_layer->getYReceptive();
 
-					for(int h = 0; h < no_feature_maps; h++)
+					for(int j = 0; j < y_steps; j++)
 					{
-						for(int j = 0; j < y_steps; j++)
+						for(int k = 0; k < x_steps; k++)
 						{
-							for(int k = 0; k < x_steps; k++)
+							Matrix* node_vector = new Matrix(conv_layer->getXReceptive()*
+																	conv_layer->getYReceptive(),1);
+							for(int l = 0; l < y_receptive; l++)
 							{
-								Matrix* node_vector = new Matrix(conv_layer->getXReceptive()*
-																		conv_layer->getYReceptive(),1);
-								for(int l = 0; l < y_receptive; l++)
+								for(int m = 0; m < x_receptive; m++)
 								{
-									for(int m = 0; m < x_receptive; m++)
-									{
-										node_vector->set(l*conv_layer->getXReceptive()+m, 1 ,
-												node_list->at(node_index-1)->get(j+l, k+m));
-									}
+									node_vector->set(l*conv_layer->getXReceptive()+m, 0 ,
+											node_list->at(node_index-1)->get(j+l, k+m));
 								}
-								Matrix node_value = (*weight_list->at(weight_index)) * (*node_vector);
-								node_list->at(node_index)->set(j, k, node_value.get(0,0));
-								delete node_vector;
+							}
+
+							Matrix node_tmp = (*(weight_list->at(weight_index))) * (*node_vector);
+							Matrix node_results = node_tmp + (*(bias_list->at(bias_index)));
+							delete node_vector;
+							mathematics::sigmoid(node_results.get(), node_results.get(), no_feature_maps);
+							for(int h = 0; h < no_feature_maps; h++)
+							{
+								node_list->at(node_index+h)->set(j, k, node_results.get(h,0));
 							}
 						}
-
-						(*node_list->at(node_index)) = ( (*(node_list->at(node_index))) + (*(bias_list->at(bias_index))) );
-						mathematics::sigmoid(node_list->at(node_index)->get(), node_list->at(node_index)->get(),
-								conv_layer->getXReceptive()*conv_layer->getYReceptive());
-
-						weight_index++;
-						bias_index++;
-						node_index++;
 					}
+					weight_index++;
+					bias_index++;
+					node_index+=no_feature_maps;
 				}
 				else if (layer_list->at(i-1)->getLayerType() == POOLING_LAYER)
 				{
 					MaxPooling_Layer* input_layer = (MaxPooling_Layer*) layer_list->at(i-1);
 					Conv_Layer*  conv_layer  = (Conv_Layer*) layer_list->at(i);
-//					int input_x_size = input_layer->getXSize();
-//					int input_y_size = input_layer->getYSize();
 					int x_steps = conv_layer->getXSize();
 					int y_steps = conv_layer->getYSize();
 					int no_feature_maps_conv = conv_layer->getNoFeatureMaps();
@@ -339,39 +345,40 @@ float Network::forward(float* labels)
 					int prev_node_index = node_index - no_feature_maps_pool; /* node_index is positioned at current node matrix,
 						this line calculates the index of the first matrix of the previous pooling layer */
 
-					for(int h = 0; h < no_feature_maps_conv; h++)
+					for(int j = 0; j < y_steps; j++)
 					{
-						for(int j = 0; j < y_steps; j++)
+						for(int k = 0; k < x_steps; k++)
 						{
-							for(int k = 0; k < x_steps; k++)
+							Matrix* node_vector = new Matrix(x_receptive * y_receptive *
+																	no_feature_maps_pool,1);
+							for(int n = 0; n < no_feature_maps_pool; n++)
 							{
-								Matrix* node_vector = new Matrix(x_receptive * y_receptive *
-																		no_feature_maps_pool,1);
-								for(int n = 0; n < no_feature_maps_pool; n++)
+								for(int l = 0; l < y_receptive; l++)
 								{
-									for(int l = 0; l < y_receptive; l++)
+									for(int m = 0; m < x_receptive; m++)
 									{
-										for(int m = 0; m < x_receptive; m++)
-										{
-											/* getting node values from different feature maps of previous pooling layer (n) */
-											node_vector->set(n*y_receptive*x_receptive + l*x_receptive+m, 1 ,
-													node_list->at(prev_node_index + n)->get(j+l, k+m));
-										}
+										/* getting node values from different feature maps of previous pooling layer (n) */
+										node_vector->set(n*y_receptive*x_receptive + l*x_receptive+m, 0 ,
+												node_list->at(prev_node_index + n)->get(j+l, k+m));
 									}
 								}
-								Matrix node_value = (*weight_list->at(weight_index)) * *node_vector;
-								node_list->at(node_index)->set(j, k, node_value.get(0,0));
+							}
+							Matrix node_tmp = (*(weight_list->at(weight_index))) * (*node_vector);
+							Matrix node_results = node_tmp + (*(bias_list->at(bias_index)));
+							delete node_vector;
+
+							mathematics::sigmoid(node_results.get(), node_results.get(), no_feature_maps_conv);
+
+							for(int h = 0; h < no_feature_maps_conv; h++)
+							{
+								node_list->at(node_index+h)->set(j, k, node_results.get(h,0));
 							}
 						}
-
-						(*node_list->at(node_index)) = ( (*(node_list->at(node_index))) + (*(bias_list->at(bias_index))) );
-						mathematics::sigmoid(node_list->at(node_index)->get(), node_list->at(node_index)->get(),
-								conv_layer->getXReceptive()*conv_layer->getYReceptive());
-
-						weight_index++;
-						bias_index++;
-						node_index++;
 					}
+
+					weight_index++;
+					bias_index++;
+					node_index+=no_feature_maps_conv;
 				}
 				else
 				{
@@ -446,6 +453,8 @@ float Network::forward(float* labels)
 					Matrix tmp = (*(weight_list->at(weight_index))) * (*full_conv_matrix);
 					(*node_list->at(node_index)) = tmp + (*(bias_list->at(bias_index)));
 
+					delete full_conv_matrix;
+
 					node_index++;
 					bias_index++;
 					weight_index++;
@@ -474,6 +483,8 @@ float Network::forward(float* labels)
 					}
 					Matrix tmp = (*(weight_list->at(weight_index))) * (*full_pool_matrix);
 					(*node_list->at(node_index)) = tmp + (*(bias_list->at(bias_index)));
+
+					delete full_pool_matrix;
 
 					node_index++;
 					bias_index++;
@@ -546,23 +557,274 @@ bool Network::backpropagate(float* labels)
 				break;
 			case FULLY_CONNECTED_LAYER:
 
+				if(layer_list->at(i-1)->getLayerType() == CONV_LAYER)
+				{
+					Conv_Layer* last_layer = (Conv_Layer*) layer_list->at(i-1);
+					Matrix* full_conv_matrix = new Matrix(last_layer->getSize(), 1);
+					Matrix* full_conv_matrix_deriv = new Matrix(last_layer->getSize(), 1);
+					int no_feature_maps = last_layer->getNoFeatureMaps();
+					int y_size = last_layer->getYSize();
+					int x_size = last_layer->getXSize();
+					int temp_node_index = node_index - no_feature_maps;
 
+					for(int j = 0; j < no_feature_maps; j++)
+					{
+						for(int k = 0; k < y_size; k++)
+						{
+							for(int l = 0; l < x_size; l++)
+							{
+								full_conv_matrix->set(j*y_size*x_size + k * x_size + l, 1,
+										node_list->at(temp_node_index)->get(k, l));
+							}
+						}
+						temp_node_index++;
+					}
+
+					layer_list->at(i)->backpropagate(full_conv_matrix,
+										node_list->at(node_index),
+										full_conv_matrix_deriv,
+										node_deriv_list->at(node_index),
+										weight_list->at(weight_index),
+										bias_list->at(bias_index),
+										weight_deriv_list->at(weight_index),
+										bias_deriv_list->at(bias_index) );
+
+					temp_node_index = node_index - no_feature_maps;
+					for(int j = 0; j < no_feature_maps; j++)
+					{
+						for(int k = 0; k < y_size; k++)
+						{
+							for(int l = 0; l < x_size; l++)
+							{
+								node_list->at(temp_node_index)->set(k, l,
+										full_conv_matrix_deriv->get(j*y_size*x_size + k * x_size + l, 1));
+							}
+						}
+						temp_node_index++;
+					}
+
+					delete full_conv_matrix;
+					delete full_conv_matrix_deriv;
+
+					node_index--;
+					bias_index--;
+					weight_index--;
+				}
+				else if (layer_list->at(i-1)->getLayerType() == POOLING_LAYER)
+				{
+					MaxPooling_Layer* last_layer = (MaxPooling_Layer*) layer_list->at(i-1);
+					Matrix* full_pool_matrix = new Matrix(last_layer->getSize(), 1);
+					Matrix* full_pool_matrix_deriv = new Matrix(last_layer->getSize(), 1);
+					int no_feature_maps = last_layer->getNoFeatures();
+					int y_size = last_layer->getYSize();
+					int x_size = last_layer->getXSize();
+					int temp_node_index = node_index - no_feature_maps;
+
+
+					for(int j = 0; j < no_feature_maps; j++)
+					{
+						for(int k = 0; k < y_size; k++)
+						{
+							for(int l = 0; l < x_size; l++)
+							{
+								full_pool_matrix->set(j*y_size*x_size + k * x_size + l, 1,
+										node_list->at(temp_node_index)->get(k, l));
+							}
+						}
+						temp_node_index++;
+					}
+
+					layer_list->at(i)->backpropagate(full_pool_matrix,
+										node_list->at(node_index),
+										full_pool_matrix_deriv,
+										node_deriv_list->at(node_index),
+										weight_list->at(weight_index),
+										bias_list->at(bias_index),
+										weight_deriv_list->at(weight_index),
+										bias_deriv_list->at(bias_index) );
+
+					temp_node_index = node_index - no_feature_maps;
+					for(int j = 0; j < no_feature_maps; j++)
+					{
+						for(int k = 0; k < y_size; k++)
+						{
+							for(int l = 0; l < x_size; l++)
+							{
+								node_list->at(temp_node_index)->set(k, l,
+										full_pool_matrix_deriv->get(j*y_size*x_size + k * x_size + l, 1));
+							}
+						}
+						temp_node_index++;
+					}
+
+					delete full_pool_matrix;
+					delete full_pool_matrix_deriv;
+
+					node_index--;
+					bias_index--;
+					weight_index--;
+				}
+				else if (layer_list->at(i-1)->getLayerType() == FULLY_CONNECTED_LAYER)
+				{
+					layer_list->at(i)->backpropagate(node_list->at(node_index-1),
+										node_list->at(node_index),
+										node_deriv_list->at(node_index-1),
+										node_deriv_list->at(node_index),
+										weight_list->at(weight_index),
+										bias_list->at(bias_index),
+										weight_deriv_list->at(weight_index),
+										bias_deriv_list->at(bias_index) );
+					node_index--;
+					bias_index--;
+					weight_index--;
+				}
+				else
+				{
+					return false;
+				}
 
 				break;
 			case CONV_LAYER:
 
-				layer_list->at(i)->backpropagate(node_list->at(node_index-1),
-												node_list->at(node_index),
-												node_deriv_list->at(node_index-1),
-												node_deriv_list->at(node_index),
+				if(layer_list->at(i-1)->getLayerType() == INPUT_LAYER)
+				{
+					Conv_Layer*  conv_layer  = (Conv_Layer*) layer_list->at(i);
+					int x_steps = conv_layer->getXSize();
+					int y_steps = conv_layer->getYSize();
+					int no_feature_maps = conv_layer->getNoFeatureMaps();
+					int x_receptive = conv_layer->getXReceptive();
+					int y_receptive = conv_layer->getYReceptive();
+
+					for(int j = 0; j < y_steps; j++)
+					{
+						for(int k = 0; k < x_steps; k++)
+						{
+							Matrix* input_vector = new Matrix(x_receptive*y_receptive,1);
+							Matrix* input_deriv_vector = new Matrix(x_receptive*y_receptive,1);
+							for(int l = 0; l < y_receptive; l++)
+							{
+								for(int m = 0; m < x_receptive; m++)
+								{
+									input_vector->set(l*conv_layer->getXReceptive()+m, 0 ,
+											node_list->at(node_index-no_feature_maps)->get(j+l, k+m));
+								}
+							}
+
+							Matrix *activation_vector = new Matrix(no_feature_maps, 1);
+							Matrix *activation_deriv_vector = new Matrix(no_feature_maps, 1);
+							for(int h = no_feature_maps; h > 0; h--)
+							{
+								activation_vector->set(h, 0, node_list->at(node_index-no_feature_maps+h)->get(j,k));
+								activation_deriv_vector->set(h, 0, node_deriv_list->at(node_index-no_feature_maps+h)->get(j,k));
+							}
+
+							layer_list->at(i)->backpropagate(input_vector,
+												activation_vector,
+												input_deriv_vector,
+												activation_deriv_vector,
 												weight_list->at(weight_index),
 												bias_list->at(bias_index),
 												weight_deriv_list->at(weight_index),
 												bias_deriv_list->at(bias_index) );
-				node_index--;
-				weight_index--;
-				bias_index--;
+
+							delete input_vector;
+							delete activation_vector;
+							delete activation_deriv_vector;
+							// move input_deriv_items to corresponding node_deriv_list matrix member
+							for(int l = 0; l < y_receptive; l++)
+							{
+								for(int m = 0; m < x_receptive; m++)
+								{
+									node_deriv_list->at(node_index-no_feature_maps)->set(j+l, k+m,
+											input_vector->get(l*conv_layer->getXReceptive()+m, 0));
+								}
+							}
+							delete input_deriv_vector;
+
+						}
+					}
+					weight_index--;
+					bias_index--;
+					node_index-=no_feature_maps;
+				}
+				else if (layer_list->at(i-1)->getLayerType() == POOLING_LAYER)
+				{
+					MaxPooling_Layer* input_layer = (MaxPooling_Layer*) layer_list->at(i-1);
+					Conv_Layer*  conv_layer  = (Conv_Layer*) layer_list->at(i);
+					int x_steps = conv_layer->getXSize();
+					int y_steps = conv_layer->getYSize();
+					int no_feature_maps_conv = conv_layer->getNoFeatureMaps();
+					int no_feature_maps_pool = input_layer->getNoFeatures();
+					int x_receptive = conv_layer->getXReceptive();
+					int y_receptive = conv_layer->getYReceptive();
+					int prev_node_index = node_index + 1 - no_feature_maps_conv - no_feature_maps_pool; /* node_index is positioned at current node matrix,
+						this line calculates the index of the first matrix of the previous pooling layer */
+
+					for(int j = 0; j < y_steps; j++)
+					{
+						for(int k = 0; k < x_steps; k++)
+						{
+							Matrix* input_vector = new Matrix(no_feature_maps_pool*x_receptive*y_receptive,1);
+							Matrix* input_deriv_vector = new Matrix(x_receptive*y_receptive,1);
+							for(int n = 0; n < no_feature_maps_pool; n++)
+							{
+								for(int l = 0; l < y_receptive; l++)
+								{
+									for(int m = 0; m < x_receptive; m++)
+									{
+										input_vector->set(n*y_receptive*x_receptive + l*x_receptive+m, 0 ,
+												node_list->at(prev_node_index + n)->get(j+l, k+m));
+									}
+								}
+							}
+
+							Matrix *activation_vector = new Matrix(no_feature_maps_conv, 1);
+							Matrix *activation_deriv_vector = new Matrix(no_feature_maps_conv, 1);
+							for(int h = no_feature_maps_conv; h > 0; h--)
+							{
+								activation_vector->set(h, 0, node_list->at(node_index-no_feature_maps_conv+h)->get(j,k));
+								activation_deriv_vector->set(h, 0, node_deriv_list->at(node_index-no_feature_maps_conv+h)->get(j,k));
+							}
+
+							layer_list->at(i)->backpropagate(input_vector,
+												activation_vector,
+												input_deriv_vector,
+												activation_deriv_vector,
+												weight_list->at(weight_index),
+												bias_list->at(bias_index),
+												weight_deriv_list->at(weight_index),
+												bias_deriv_list->at(bias_index) );
+
+							delete input_vector;
+							delete activation_vector;
+							delete activation_deriv_vector;
+							// move input_deriv_items to corresponding node_deriv_list matrix member
+							for(int n = 0; n < no_feature_maps_pool; n++)
+							{
+								for(int l = 0; l < y_receptive; l++)
+								{
+									for(int m = 0; m < x_receptive; m++)
+									{
+										node_deriv_list->at(prev_node_index + n)->set(j+l, k+m,
+												input_vector->get(n*y_receptive*x_receptive + l*x_receptive + m, 0));
+									}
+								}
+							}
+							delete input_deriv_vector;
+
+						}
+					}
+					weight_index--;
+					bias_index--;
+					node_index-=no_feature_maps_conv;
+				}
+				else
+				{
+					return false;
+				}
 				break;
+
+
 
 			case DROPOUT_LAYER:
 				//not implemented
