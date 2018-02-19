@@ -92,7 +92,7 @@ void Conv_Layer::backpropagate( Matrix* inputs,
 		for(int o=0;o<outputsize; o++)
 		{
 			y_deriv_x->set(o,i, y_deriv_z->get(o,0) * weights->get(o,i) );
-			input_derivations->set(i, 0, input_derivations->get(i,0) + activation_derivations->get(i,0) * y_deriv_x->get(o,i) );
+			input_derivations->set(i, 0, input_derivations->get(i,0) + activation_derivations->get(o,0) * y_deriv_x->get(o,i) );
 		}
 	}
 	// calc weight- and bias-derivations

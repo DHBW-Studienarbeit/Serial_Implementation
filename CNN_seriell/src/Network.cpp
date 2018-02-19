@@ -187,7 +187,7 @@ bool Network::generate_network()
 			{
 				node_list->push_back(new Matrix(layer->getSize(), 1));
 				node_deriv_list->push_back(new Matrix(layer->getSize(), 1));
-				weight_deriv_list->push_back(new Matrix(layer->getSize(), 1));
+				weight_deriv_list->push_back(new Matrix(layer->getSize(),layer_list->at(i-1)->getSize()));
 				bias_deriv_list->push_back(new Matrix(layer->getSize(), 1));
 				weight_list->push_back(new Matrix(layer->getSize(),layer_list->at(i-1)->getSize()));
 				bias_list->push_back(new Matrix(layer->getSize(), 1));
@@ -444,7 +444,7 @@ float Network::forward(float* labels)
 						{
 							for(int l = 0; l < x_size; l++)
 							{
-								full_conv_matrix->set(j*y_size*x_size + k * x_size + l, 1,
+								full_conv_matrix->set(j*y_size*x_size + k * x_size + l, 0,
 										node_list->at(temp_node_index)->get(k, l));
 							}
 						}
@@ -475,7 +475,7 @@ float Network::forward(float* labels)
 						{
 							for(int l = 0; l < x_size; l++)
 							{
-								full_pool_matrix->set(j*y_size*x_size + k * x_size + l, 1,
+								full_pool_matrix->set(j*y_size*x_size + k * x_size + l, 0,
 										node_list->at(temp_node_index)->get(k, l));
 							}
 						}
@@ -573,7 +573,7 @@ bool Network::backpropagate(float* labels)
 						{
 							for(int l = 0; l < x_size; l++)
 							{
-								full_conv_matrix->set(j*y_size*x_size + k * x_size + l, 1,
+								full_conv_matrix->set(j*y_size*x_size + k * x_size + l, 0,
 										node_list->at(temp_node_index)->get(k, l));
 							}
 						}
@@ -597,7 +597,7 @@ bool Network::backpropagate(float* labels)
 							for(int l = 0; l < x_size; l++)
 							{
 								node_list->at(temp_node_index)->set(k, l,
-										full_conv_matrix_deriv->get(j*y_size*x_size + k * x_size + l, 1));
+										full_conv_matrix_deriv->get(j*y_size*x_size + k * x_size + l, 0));
 							}
 						}
 						temp_node_index++;
@@ -627,7 +627,7 @@ bool Network::backpropagate(float* labels)
 						{
 							for(int l = 0; l < x_size; l++)
 							{
-								full_pool_matrix->set(j*y_size*x_size + k * x_size + l, 1,
+								full_pool_matrix->set(j*y_size*x_size + k * x_size + l, 0,
 										node_list->at(temp_node_index)->get(k, l));
 							}
 						}
@@ -651,7 +651,7 @@ bool Network::backpropagate(float* labels)
 							for(int l = 0; l < x_size; l++)
 							{
 								node_list->at(temp_node_index)->set(k, l,
-										full_pool_matrix_deriv->get(j*y_size*x_size + k * x_size + l, 1));
+										full_pool_matrix_deriv->get(j*y_size*x_size + k * x_size + l, 0));
 							}
 						}
 						temp_node_index++;
@@ -714,8 +714,8 @@ bool Network::backpropagate(float* labels)
 							Matrix *activation_deriv_vector = new Matrix(no_feature_maps, 1);
 							for(int h = no_feature_maps; h > 0; h--)
 							{
-								activation_vector->set(h, 0, node_list->at(node_index-no_feature_maps+h)->get(j,k));
-								activation_deriv_vector->set(h, 0, node_deriv_list->at(node_index-no_feature_maps+h)->get(j,k));
+								activation_vector->set(h-1, 0, node_list->at(node_index-no_feature_maps+h)->get(j,k));
+								activation_deriv_vector->set(h-1, 0, node_deriv_list->at(node_index-no_feature_maps+h)->get(j,k));
 							}
 
 							layer_list->at(i)->backpropagate(input_vector,
@@ -736,7 +736,7 @@ bool Network::backpropagate(float* labels)
 								for(int m = 0; m < x_receptive; m++)
 								{
 									node_deriv_list->at(node_index-no_feature_maps)->set(j+l, k+m,
-											input_vector->get(l*conv_layer->getXReceptive()+m, 0));
+											input_deriv_vector->get(l*conv_layer->getXReceptive()+m, 0));
 								}
 							}
 							delete input_deriv_vector;
@@ -765,7 +765,7 @@ bool Network::backpropagate(float* labels)
 						for(int k = 0; k < x_steps; k++)
 						{
 							Matrix* input_vector = new Matrix(no_feature_maps_pool*x_receptive*y_receptive,1);
-							Matrix* input_deriv_vector = new Matrix(x_receptive*y_receptive,1);
+							Matrix* input_deriv_vector = new Matrix(no_feature_maps_pool*x_receptive*y_receptive,1);
 							for(int n = 0; n < no_feature_maps_pool; n++)
 							{
 								for(int l = 0; l < y_receptive; l++)
@@ -782,8 +782,8 @@ bool Network::backpropagate(float* labels)
 							Matrix *activation_deriv_vector = new Matrix(no_feature_maps_conv, 1);
 							for(int h = no_feature_maps_conv; h > 0; h--)
 							{
-								activation_vector->set(h, 0, node_list->at(node_index-no_feature_maps_conv+h)->get(j,k));
-								activation_deriv_vector->set(h, 0, node_deriv_list->at(node_index-no_feature_maps_conv+h)->get(j,k));
+								activation_vector->set(h-1, 0, node_list->at(node_index-no_feature_maps_conv+h)->get(j,k));
+								activation_deriv_vector->set(h-1, 0, node_deriv_list->at(node_index-no_feature_maps_conv+h)->get(j,k));
 							}
 
 							layer_list->at(i)->backpropagate(input_vector,
@@ -806,7 +806,7 @@ bool Network::backpropagate(float* labels)
 									for(int m = 0; m < x_receptive; m++)
 									{
 										node_deriv_list->at(prev_node_index + n)->set(j+l, k+m,
-												input_vector->get(n*y_receptive*x_receptive + l*x_receptive + m, 0));
+												input_deriv_vector->get(n*y_receptive*x_receptive + l*x_receptive + m, 0));
 									}
 								}
 							}
