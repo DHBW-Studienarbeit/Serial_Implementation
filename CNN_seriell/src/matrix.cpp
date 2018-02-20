@@ -86,6 +86,7 @@ float Matrix::get(int m, int n){
 	}
 	else
 	{
+		std::cerr << "invalid arguments in matrix::get m:" << m << " n:" << n;
 		return 0.0f;
 	}
 }
@@ -128,7 +129,7 @@ void Matrix::set(int m, int n, float value){
 	}
 	else
 	{
-		value = value;
+		std::cerr << "invalid arguments in matrix::set m:" << m << " n:" << n;
 	}
 }
 

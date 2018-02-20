@@ -549,64 +549,52 @@ bool Network::backpropagate(float* labels)
 				{
 					Conv_Layer* last_layer = (Conv_Layer*)layer_list->at(i - 1);
 					MaxPooling_Layer* current_layer = (MaxPooling_Layer*)layer_list->at(i);
-					Matrix* pool_conv_matrix = new Matrix(last_layer->getSize(), 1);
 					int no_feature_maps = last_layer->getNoFeatureMaps();
-					int y_size = last_layer->getYSize();
+					int conv_y_size = last_layer->getYSize();
 					int y_step_size = current_layer->getYReceptive();
-					int x_size = last_layer->getXSize();
+					int conv_x_size = last_layer->getXSize();
 					int x_step_size = current_layer->getXReceptive();
-					int temp_node_index = node_index + 1 - 2 * no_feature_maps;
+					int conv_node_index = node_index + 1 - 2 * no_feature_maps;
+					int pool_node_index = node_index + 1 - no_feature_maps;
 
-					//Über alle Feature Maps gehen um zu ermitteln, welche an jeder Stelle höchsten Wert hat
-					for (int n = 0; n < no_feature_maps; n++)
+					//Ueber alle Feature Maps des vorherigen Layers gehen
+					for (int feature_map = 0; feature_map < no_feature_maps; feature_map++)
 					{
-
-						for (int j = 0; j < y_size; j = j + y_step_size)
+						//Ueber Anfangselement von jedem Pooling-Rechteck iterieren
+						for (int j = 0; j < conv_y_size; j = j + y_step_size)
 						{
-							for (int k = 0; k < x_size; k = k + x_step_size)
+							for (int k = 0; k < conv_x_size; k = k + x_step_size)
 							{
 
-								int max_node_index = 0;
-								float max_node_value = 0.0f;
+								int max_node_index_x = 0;
+								int max_node_index_y = 0;
+								float max_node_value =0.0f;
 
+								//benachbarte Elemente durchgehen und max ermitteln
 								for (int l = 0; l < y_step_size; l++)
 								{
 									for (int m = 0; m < x_step_size; m++)
 									{
+										node_deriv_list->at(conv_node_index + feature_map)->set(j, k, 0);
 
-										if (max_node_value < node_list->at(temp_node_index + n)->
+										if (max_node_value < node_list->at(conv_node_index + feature_map)->
 											get(j + l, k + m))
 										{
-											max_node_value = node_list->at(temp_node_index + n)->
+											max_node_value = node_list->at(conv_node_index + feature_map)->
 												get(j + l, k + m);
-											max_node_index = m;
+											max_node_index_x = m;
+											max_node_index_y = l;
 										}
 									}
 								}
-								pool_conv_matrix->set(j*y_size*x_size + k * x_size, 0, (float)max_node_index);
-							}
-						}
-					
+								//Wert der Zurueckgefuehrt werden soll
+								float node_deriv_value = node_deriv_list->at(pool_node_index + feature_map)->get(j / y_step_size, k / x_step_size);
 
-						//Wert durchreichen wenn höchster Wert, ansonsten 0
-						for (int j = 0; j < y_size; j = j + y_step_size)
-						{
-							for (int k = 0; k < x_size; k = k + x_step_size)
-							{
-								for (int m = 0; m < no_feature_maps; m++)
-								{
-									if (pool_conv_matrix->get(j*y_size*x_size + k * x_size, 0) == m) {
-										node_deriv_list->at(temp_node_index + m)->
-											set(j, k, node_deriv_list->at(node_index)->get(j / y_step_size, k / x_step_size));
-									}
-									else {
-										node_deriv_list->at(temp_node_index + m)->set(j, k, 0);
-									}
-								}
+								node_deriv_list->at(conv_node_index + feature_map)->
+										set(j+max_node_index_y, k+max_node_index_x, node_deriv_value);
 							}
 						}
 					}
-					delete pool_conv_matrix;
 					node_index -= no_feature_maps;
 				}
 	
