@@ -14,7 +14,7 @@ namespace mathematics {
 float sigmoid_once(float in)
 {
 	double temp = exp(in);
-	return temp / (1+temp);
+	return (float)(temp / (1+temp));
 }
 
 float sigmoid_backward_derivated_once(float activation)
@@ -41,26 +41,26 @@ void sigmoid_backward_derivated(float *activation, float *derivatives, int size)
 
 void softmax(float *in, float *out, int size)
 {
-	float sum=0;
+	double sum=0;
 	for(int i=0; i<size; i++)
 	{
 		sum += exp(in[i]);
 	}
 	for(int i=0; i<size; i++)
 	{
-		out[i] = exp(in[i]) / sum;
+		out[i] = (float)(exp(in[i]) / sum);
 	}
 }
 
 
 float cross_entropy(float *calculated, float *expected, int size)
 {
-	float sum=0;
+	double sum=0;
 	for(; size>0; size--, expected++, calculated++)
 	{
 		sum += - (*expected) * log(*calculated);
 	}
-	return sum;
+	return (float)sum;
 }
 
 float get_cost(float *output, float *labels, int size)

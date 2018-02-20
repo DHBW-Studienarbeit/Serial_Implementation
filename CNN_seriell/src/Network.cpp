@@ -99,7 +99,6 @@ bool Network::generate_network()
 					conv_layer->setXSize(dim_x);
 					conv_layer->setYSize(dim_y);
 
-					// added on 2018-02-18
 					weight_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()));
 					weight_deriv_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()));
 					bias_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), 1));
@@ -109,10 +108,6 @@ bool Network::generate_network()
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
 						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						//weight_deriv_list->push_back(new Matrix(conv_layer->getXReceptive(), conv_layer->getYReceptive()));
-						//bias_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						//weight_list->push_back(new Matrix(conv_layer->getXReceptive(), conv_layer->getYReceptive()));
-						//bias_list->push_back(new Matrix(dim_y, dim_x));
 					}
 					conv_layer->setSize(conv_layer->getNoFeatureMaps()*dim_x*dim_y);
 				}
@@ -129,7 +124,6 @@ bool Network::generate_network()
 					conv_layer->setXSize(dim_x);
 					conv_layer->setYSize(dim_y);
 
-					// added on 2018-02-18
 					int prev_no_feat = last_layer->getNoFeatures();
 					weight_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()*prev_no_feat));
 					weight_deriv_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()*prev_no_feat));
@@ -140,10 +134,6 @@ bool Network::generate_network()
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
 						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						//weight_deriv_list->push_back(new Matrix(conv_layer->getXReceptive(), conv_layer->getYReceptive()));
-						//bias_deriv_list->push_back(new Matrix(dim_y, dim_x));
-						//weight_list->push_back(new Matrix(conv_layer->getXReceptive(), conv_layer->getYReceptive()));
-						//bias_list->push_back(new Matrix(dim_y, dim_x));
 					}
 
 					conv_layer->setSize(conv_layer->getNoFeatureMaps()*dim_x*dim_y);
@@ -202,6 +192,14 @@ bool Network::generate_network()
 				break;
 			}
 		}
+	}
+	for (unsigned int i = 0; i < weight_list->size(); i++)
+	{
+		weight_list->at(i)->set_all_equal(0.0f);
+	}
+	for (unsigned int i = 0; i < bias_list->size(); i++)
+	{
+		bias_list->at(i)->set_all_equal(0.0f);
 	}
 	return true;
 }
@@ -270,7 +268,7 @@ float Network::test()
 			}
 		}
 	}
-	return correct_detections/(NO_PICS_PER_FILE_D*NO_TEST_FILES_D);
+	return (float)correct_detections/(NO_PICS_PER_FILE_D*NO_TEST_FILES_D);
 }
 
 float Network::forward(float* labels)
@@ -418,7 +416,7 @@ float Network::forward(float* labels)
 							node_list->at(node_index)->set(j/y_step_size,k/x_step_size, max_node);
 						}
 					}
-					node_index++;
+					node_index+=pooling_layer->getNoFeatures();
 				}
 				else
 				{
@@ -451,7 +449,8 @@ float Network::forward(float* labels)
 						temp_node_index++;
 					}
 					Matrix tmp = (*(weight_list->at(weight_index))) * (*full_conv_matrix);
-					(*node_list->at(node_index)) = tmp + (*(bias_list->at(bias_index)));
+					Matrix node_results = tmp + (*(bias_list->at(bias_index)));
+					mathematics::sigmoid(node_results.get(), node_list->at(node_index)->get(), tmp.getHeight());
 
 					delete full_conv_matrix;
 
@@ -482,7 +481,8 @@ float Network::forward(float* labels)
 						temp_node_index++;
 					}
 					Matrix tmp = (*(weight_list->at(weight_index))) * (*full_pool_matrix);
-					(*node_list->at(node_index)) = tmp + (*(bias_list->at(bias_index)));
+					Matrix node_results = tmp + (*(bias_list->at(bias_index)));
+					mathematics::sigmoid(node_results.get(), node_list->at(node_index)->get(), tmp.getHeight());
 
 					delete full_pool_matrix;
 
@@ -493,7 +493,8 @@ float Network::forward(float* labels)
 				else if (layer_list->at(i-1)->getLayerType() == FULLY_CONNECTED_LAYER)
 				{
 					Matrix tmp = (*weight_list->at(weight_index)) * (*node_list->at(node_index-1));
-					(*node_list->at(node_index)) = tmp + (*(bias_list->at(bias_index)));
+					Matrix node_results = tmp + (*(bias_list->at(bias_index)));
+					mathematics::sigmoid(node_results.get(), node_list->at(node_index)->get(), tmp.getHeight());
 					node_index++;
 					bias_index++;
 					weight_index++;
@@ -544,70 +545,73 @@ bool Network::backpropagate(float* labels)
 				break;
 			case POOLING_LAYER:
 
-				if(layer_list->at(i-1)->getLayerType() == CONV_LAYER)
+				if (layer_list->at(i - 1)->getLayerType() == CONV_LAYER)
 				{
-					Conv_Layer* last_layer = (Conv_Layer*) layer_list->at(i-1);
+					Conv_Layer* last_layer = (Conv_Layer*)layer_list->at(i - 1);
+					MaxPooling_Layer* current_layer = (MaxPooling_Layer*)layer_list->at(i);
 					Matrix* pool_conv_matrix = new Matrix(last_layer->getSize(), 1);
 					int no_feature_maps = last_layer->getNoFeatureMaps();
 					int y_size = last_layer->getYSize();
-					int y_step_size = last_layer->getYReceptive();
+					int y_step_size = current_layer->getYReceptive();
 					int x_size = last_layer->getXSize();
-					int x_step_size = last_layer->getXReceptive();
-					int temp_node_index = node_index - no_feature_maps;
+					int x_step_size = current_layer->getXReceptive();
+					int temp_node_index = node_index + 1 - 2 * no_feature_maps;
 
 					//Über alle Feature Maps gehen um zu ermitteln, welche an jeder Stelle höchsten Wert hat
-
-					for(int j = 0; j < y_size; j=j+y_step_size)
+					for (int n = 0; n < no_feature_maps; n++)
 					{
-						for(int k = 0; k < x_size; k=k+x_step_size)
+
+						for (int j = 0; j < y_size; j = j + y_step_size)
 						{
-
-							int max_node_index = 0;
-							float max_node_value=0.0f;
-
-							for(int l = 0; l < y_step_size; l++)
+							for (int k = 0; k < x_size; k = k + x_step_size)
 							{
-								for(int m = 0; m < x_step_size; m++)
+
+								int max_node_index = 0;
+								float max_node_value = 0.0f;
+
+								for (int l = 0; l < y_step_size; l++)
 								{
-									for(int n = 0; n < no_feature_maps; n++)
+									for (int m = 0; m < x_step_size; m++)
 									{
-										if(max_node_value < node_list->at(temp_node_index+n)->
-												get(j+l,k+m))
+
+										if (max_node_value < node_list->at(temp_node_index + n)->
+											get(j + l, k + m))
 										{
-											max_node_value = node_list->at(temp_node_index+n)->
-													get(j+l,k+m);
+											max_node_value = node_list->at(temp_node_index + n)->
+												get(j + l, k + m);
 											max_node_index = m;
 										}
 									}
 								}
+								pool_conv_matrix->set(j*y_size*x_size + k * x_size, 0, (float)max_node_index);
 							}
-							pool_conv_matrix->set(j*y_size*x_size + k * x_size,0,max_node_index);
 						}
-					}
+					
 
-					//Wert durchreichen wenn höchster Wert, ansonsten 0
-					for(int j = 0; j < y_size; j=j+y_step_size)
-					{
-						for(int k = 0; k < x_size; k=k+x_step_size)
+						//Wert durchreichen wenn höchster Wert, ansonsten 0
+						for (int j = 0; j < y_size; j = j + y_step_size)
 						{
-							for(int m = 0; m < no_feature_maps; m++)
+							for (int k = 0; k < x_size; k = k + x_step_size)
 							{
-								if(pool_conv_matrix->get(j*y_size*x_size + k * x_size,0) == m){
-									node_deriv_list->at(temp_node_index + m)->
-											set(j,k,node_deriv_list->at(node_index)->get(j,k));
-								}
-								else{
-									node_deriv_list->at(temp_node_index + m)->set(j,k,0);
+								for (int m = 0; m < no_feature_maps; m++)
+								{
+									if (pool_conv_matrix->get(j*y_size*x_size + k * x_size, 0) == m) {
+										node_deriv_list->at(temp_node_index + m)->
+											set(j, k, node_deriv_list->at(node_index)->get(j / y_step_size, k / x_step_size));
+									}
+									else {
+										node_deriv_list->at(temp_node_index + m)->set(j, k, 0);
+									}
 								}
 							}
 						}
 					}
-
+					delete pool_conv_matrix;
+					node_index -= no_feature_maps;
 				}
+	
 
-				node_index--;
-
-				break;
+			break;
 			case FULLY_CONNECTED_LAYER:
 
 				if(layer_list->at(i-1)->getLayerType() == CONV_LAYER)

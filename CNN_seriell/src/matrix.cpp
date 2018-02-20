@@ -80,7 +80,14 @@ void Matrix::set_all_equal(float value)
  * <return>float - Value at position in Matrix</return>
  */
 float Matrix::get(int m, int n){
-	return this->mat_array[m*(this->length) + n];
+	if (m < height && n < length)
+	{
+		return this->mat_array[m*(this->length) + n];
+	}
+	else
+	{
+		return 0.0f;
+	}
 }
 
 /*
@@ -115,7 +122,14 @@ int Matrix::getLength(){
  * <param>float value - Value to be set</param>
  */
 void Matrix::set(int m, int n, float value){
-	this->mat_array[m*(this->length) + n] = value;
+	if (m < height && n < length)
+	{
+		this->mat_array[m*(this->length) + n] = value;
+	}
+	else
+	{
+		value = value;
+	}
 }
 
 /**
@@ -140,7 +154,7 @@ void Matrix::test(){
 		for(int n=0; n<length; n++){
 
 			//generate random number on position [m][n]
-			set(m,n,n);
+			set(m,n, (float)n);
 		}
 	}
 }

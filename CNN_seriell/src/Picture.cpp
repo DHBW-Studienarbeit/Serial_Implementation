@@ -32,7 +32,7 @@ Picture::Picture(std::string *line)
 	for(int i=0; i<OUTPUT_SIZE; i++)
 	{
 		std::getline(lineStream,cell, ',');
-		this->output_data[i] = std::stod(cell);
+		this->output_data[i] = (float)std::stod(cell);
 	}
 }
 
