@@ -73,6 +73,9 @@ void Network::add_Layer(Layer* layer)
  */
 bool Network::generate_network()
 {
+	int node_index=0;
+	int bias_index=0;
+	int weight_index=0;
 	for(unsigned int i = 0; i < layer_list->size(); i++)
 	{
 		Layer* layer = layer_list->at(i);
@@ -81,13 +84,18 @@ bool Network::generate_network()
 			case INPUT_LAYER:
 			{
 				Input_Layer* input_layer = (Input_Layer*) layer;
+				input_layer->setNodeIndex(node_index);
 				node_list->push_back(new Matrix(input_layer->getRows(),input_layer->getCols()));
 				node_deriv_list->push_back(new Matrix(input_layer->getRows(),input_layer->getCols()));
+				node_index++;
 				break;
 			}
 			case CONV_LAYER:
 			{
 				Conv_Layer* conv_layer = (Conv_Layer*) layer;
+				conv_layer->setBiasIndex(bias_index);
+				conv_layer->setNodeIndex(node_index);
+				conv_layer->setWeightIndex(weight_index);
 				if((layer_list->at(i-1)->getLayerType() == INPUT_LAYER))
 				{
 					Input_Layer* last_layer = (Input_Layer*) layer_list->at(i-1);
@@ -102,13 +110,16 @@ bool Network::generate_network()
 
 					weight_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()));
 					weight_deriv_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()));
+					weight_index++;
 					bias_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), 1));
 					bias_deriv_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), 1));
+					bias_index++;
 
 					for (int i = 0; i < conv_layer->getNoFeatureMaps(); i++)
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
 						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
+						node_index++;
 					}
 					conv_layer->setSize(conv_layer->getNoFeatureMaps()*dim_x*dim_y);
 				}
@@ -128,13 +139,16 @@ bool Network::generate_network()
 					int prev_no_feat = last_layer->getNoFeatures();
 					weight_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()*prev_no_feat));
 					weight_deriv_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), conv_layer->getXReceptive()*conv_layer->getYReceptive()*prev_no_feat));
+					weight_index++;
 					bias_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), 1));
 					bias_deriv_list->push_back(new Matrix(conv_layer->getNoFeatureMaps(), 1));
+					bias_index++;
 
 					for (int i = 0; i < conv_layer->getNoFeatureMaps(); i++)
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
 						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
+						node_index++;
 					}
 
 					conv_layer->setSize(conv_layer->getNoFeatureMaps()*dim_x*dim_y);
@@ -148,6 +162,7 @@ bool Network::generate_network()
 			case POOLING_LAYER:
 			{
 				MaxPooling_Layer* pooling_layer = (MaxPooling_Layer*) layer;
+				pooling_layer->setNodeIndex(node_index);
 				if((layer_list->at(i-1)->getLayerType() == CONV_LAYER))
 				{
 					Conv_Layer* last_layer = (Conv_Layer*) layer_list->at(i-1);
@@ -164,6 +179,7 @@ bool Network::generate_network()
 					{
 						node_list->push_back(new Matrix(dim_y, dim_x));
 						node_deriv_list->push_back(new Matrix(dim_y, dim_x));
+						node_index++;
 					}
 
 					pooling_layer->setSize(dim_x*dim_y*prev_no_features);
@@ -176,16 +192,24 @@ bool Network::generate_network()
 			}
 			case FULLY_CONNECTED_LAYER:
 			{
+				FullyConnected_Layer* fullyConn_layer = (FullyConnected_Layer*) layer;
+				fullyConn_layer->setBiasIndex(bias_index);
+				fullyConn_layer->setNodeIndex(node_index);
+				fullyConn_layer->setWeightIndex(weight_index);
 				node_list->push_back(new Matrix(layer->getSize(), 1));
 				node_deriv_list->push_back(new Matrix(layer->getSize(), 1));
-				weight_deriv_list->push_back(new Matrix(layer->getSize(),layer_list->at(i-1)->getSize()));
-				bias_deriv_list->push_back(new Matrix(layer->getSize(), 1));
+				node_index++;
 				weight_list->push_back(new Matrix(layer->getSize(),layer_list->at(i-1)->getSize()));
+				weight_deriv_list->push_back(new Matrix(layer->getSize(),layer_list->at(i-1)->getSize()));
+				weight_index++;
 				bias_list->push_back(new Matrix(layer->getSize(), 1));
+				bias_deriv_list->push_back(new Matrix(layer->getSize(), 1));
+				bias_index++;
 				break;
 			}
 			case DROPOUT_LAYER:
 			{
+				//TODO not implemented yet
 				break;
 			}
 			default:

@@ -32,6 +32,9 @@ Layer::Layer(int size, LAYER_TYPE layer_type)
 
 Layer::Layer(LAYER_TYPE layer_type)
 {
+	weight_index = -1;
+	bias_index = -1;
+	node_index = -1;
 	no_nodes = -1;
 	type = layer_type;
 }
@@ -57,4 +60,34 @@ int Layer::getSize()
 void Layer::setSize(int new_size)
 {
 	this->no_nodes = new_size;
+}
+
+void Layer::setNodeIndex(int index)
+{
+	this->node_index=index;
+}
+
+void Layer::setBiasIndex(int index)
+{
+	this->bias_index=index;
+}
+
+void Layer::setWeightIndex(int index)
+{
+	this->weight_index=index;
+}
+
+int Layer::getNodeIndex()
+{
+	return node_index;
+}
+
+int Layer::getBiasIndex()
+{
+	return bias_index;
+}
+
+int Layer::getWeightIndex()
+{
+	return weight_index;
 }
