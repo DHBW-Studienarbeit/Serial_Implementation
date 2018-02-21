@@ -9,6 +9,7 @@
 
 #include "Network.hpp"
 #include <math.h>
+#include <limits>
 
 
 Network::Network()
@@ -390,6 +391,7 @@ float Network::forward(float* labels)
 				{
 					Conv_Layer* last_layer = (Conv_Layer*) layer_list->at(i-1);
 					MaxPooling_Layer* pooling_layer = (MaxPooling_Layer*) layer_list->at(i);
+					int no_feature_maps = last_layer->getNoFeatureMaps();
 					int conv_x_size = last_layer->getXSize();
 					int conv_y_size = last_layer->getYSize();
 					int x_step_size = pooling_layer->getXReceptive();
@@ -397,23 +399,26 @@ float Network::forward(float* labels)
 					float max_node = 0.0f;
 					float new_node = 0.0f;
 
-					for(int j = 0; j < conv_y_size; j=j+y_step_size)
+					for(int feature_map = 0; feature_map < no_feature_maps; feature_map++)
 					{
-						for(int k = 0; k < conv_x_size; k=k+x_step_size)
+						for(int j = 0; j < conv_y_size; j=j+y_step_size)
 						{
-							max_node = 0.0f;
-							for(int l = 0; l < y_step_size; l++)
+							for(int k = 0; k < conv_x_size; k=k+x_step_size)
 							{
-								for(int m = 0; m < x_step_size; m++)
+								max_node = 0.0f;
+								for(int l = 0; l < y_step_size; l++)
 								{
-									new_node = node_list->at(node_index-1)->get(j+l,k+m);
-									if(new_node >= max_node)
+									for(int m = 0; m < x_step_size; m++)
 									{
-										max_node = new_node;
+										new_node = node_list->at(node_index-1)->get(j+l,k+m);
+										if(new_node >= max_node)
+										{
+											max_node = new_node;
+										}
 									}
 								}
+								node_list->at(node_index + feature_map)->set(j/y_step_size,k/x_step_size, max_node);
 							}
-							node_list->at(node_index)->set(j/y_step_size,k/x_step_size, max_node);
 						}
 					}
 					node_index+=pooling_layer->getNoFeatures();
@@ -568,7 +573,7 @@ bool Network::backpropagate(float* labels)
 
 								int max_node_index_x = 0;
 								int max_node_index_y = 0;
-								float max_node_value =0.0f;
+								float max_node_value = - std::numeric_limits<float>::max();
 
 								//benachbarte Elemente durchgehen und max ermitteln
 								for (int l = 0; l < y_step_size; l++)
