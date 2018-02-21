@@ -10,6 +10,7 @@
 #include "Network.hpp"
 #include <math.h>
 #include <limits>
+#include <iostream>
 
 
 Network::Network()
@@ -21,8 +22,8 @@ Network::Network()
 	node_deriv_list = new vector<Matrix*>();
 	weight_deriv_list = new vector<Matrix*>();
 	bias_deriv_list = new vector<Matrix*>();
-	train_picture_container = new PictureContainer("./train", 55);
-	test_picture_container = new PictureContainer("./test", 10);
+	train_picture_container = new PictureContainer("./train", 1);
+	test_picture_container = new PictureContainer("./test", 1);
 }
 
 Network::~Network()
@@ -280,10 +281,10 @@ float Network::test()
 					correct_index = k;
 				}
 
-				if(node_list->at(node_list->size())->get()[k] > max_val)
+				if(node_list->at(node_list->size()-1)->get()[k] > max_val)
 				{
 					calculated_index = k;
-					max_val = node_list->at(node_list->size())->get()[k];
+					max_val = node_list->at(node_list->size()-1)->get()[k];
 				}
 			}
 

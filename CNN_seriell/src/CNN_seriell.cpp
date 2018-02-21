@@ -24,7 +24,7 @@
 #define FULLY_CONNECTED_SIZE_D	10
 
 #define BATCH_SIZE_D	10
-#define NO_ITERATIONS_D 10
+#define NO_ITERATIONS_D 1
 
 using namespace std;
 
