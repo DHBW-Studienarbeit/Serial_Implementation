@@ -23,7 +23,7 @@
 #define MAX_POOL_SIZE_2_D		2
 #define FULLY_CONNECTED_SIZE_D	10
 
-#define BATCH_SIZE_D	10
+#define BATCH_SIZE_D	1000
 #define NO_ITERATIONS_D 1
 
 using namespace std;
