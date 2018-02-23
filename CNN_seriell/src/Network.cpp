@@ -304,7 +304,7 @@ float Network::forward(float* labels)
 
 	for(unsigned int i = 0; i < layer_list->size(); i++)
 	{
-		std::cout << "\n\r forward Layer " << i;
+		//std::cout << "\n forward Layer " << i;
 		switch (layer_list->at(i)->getLayerType())
 		{
 			case INPUT_LAYER:
@@ -538,9 +538,9 @@ bool Network::backpropagate(float* labels)
 										layer_list->back()->getSize() );
 
 	// actual backpropagation
-	for(int i = layer_list->size()-1; i > 0; i--)
+	for(int i = layer_list->size()-1; i >= 0; i--)
 	{
-		std::cout << "\n backward Layer " << i;
+		//std::cout << "\n backward Layer " << i;
 		switch (layer_list->at(i)->getLayerType())
 		{
 			case INPUT_LAYER:
@@ -752,10 +752,10 @@ bool Network::backpropagate(float* labels)
 
 							Matrix *activation_vector = new Matrix(no_feature_maps, 1);
 							Matrix *activation_deriv_vector = new Matrix(no_feature_maps, 1);
-							for(int feature_map = no_feature_maps; feature_map > 0; feature_map--)
+							for(int feature_map = 0; feature_map < no_feature_maps; feature_map++)
 							{
-								activation_vector->set(feature_map-1, 0, node_list->at(current_node_index+feature_map)->get(j,k));
-								activation_deriv_vector->set(feature_map-1, 0, node_deriv_list->at(current_node_index+feature_map)->get(j,k));
+								activation_vector->set(feature_map, 0, node_list->at(current_node_index+feature_map)->get(j,k));
+								activation_deriv_vector->set(feature_map, 0, node_deriv_list->at(current_node_index+feature_map)->get(j,k));
 							}
 
 							layer_list->at(i)->backpropagate(input_vector,
@@ -775,7 +775,7 @@ bool Network::backpropagate(float* labels)
 							{
 								for(int m = 0; m < x_receptive; m++)
 								{
-									node_deriv_list->at(current_node_index)->set(j+l, k+m,
+									node_deriv_list->at(last_node_index)->set(j+l, k+m,
 											input_deriv_vector->get(l*conv_layer->getXReceptive()+m, 0));
 								}
 							}
@@ -795,7 +795,7 @@ bool Network::backpropagate(float* labels)
 					int x_receptive = conv_layer->getXReceptive();
 					int y_receptive = conv_layer->getYReceptive();
 					int current_node_index = conv_layer->getNodeIndex();
-					int prev_node_index = pooling_layer->getNodeIndex(); /* node_index is positioned at current node matrix,
+					int last_node_index = pooling_layer->getNodeIndex(); /* node_index is positioned at current node matrix,
 						this line calculates the index of the first matrix of the previous pooling layer */
 
 					for(int j = 0; j < y_steps; j++)
@@ -811,17 +811,17 @@ bool Network::backpropagate(float* labels)
 									for(int m = 0; m < x_receptive; m++)
 									{
 										input_vector->set(n*y_receptive*x_receptive + l*x_receptive+m, 0 ,
-												node_list->at(prev_node_index + n)->get(j+l, k+m));
+												node_list->at(last_node_index + n)->get(j+l, k+m));
 									}
 								}
 							}
 
 							Matrix *activation_vector = new Matrix(no_feature_maps_conv, 1);
 							Matrix *activation_deriv_vector = new Matrix(no_feature_maps_conv, 1);
-							for(int feature_map = no_feature_maps_conv; feature_map > 0; feature_map--)
+							for(int feature_map = 0; feature_map < no_feature_maps_conv; feature_map++)
 							{
-								activation_vector->set(feature_map-1, 0, node_list->at(current_node_index+feature_map)->get(j,k));
-								activation_deriv_vector->set(feature_map-1, 0, node_deriv_list->at(current_node_index+feature_map)->get(j,k));
+								activation_vector->set(feature_map, 0, node_list->at(current_node_index+feature_map)->get(j,k));
+								activation_deriv_vector->set(feature_map, 0, node_deriv_list->at(current_node_index+feature_map)->get(j,k));
 							}
 
 							layer_list->at(i)->backpropagate(input_vector,
@@ -843,7 +843,7 @@ bool Network::backpropagate(float* labels)
 								{
 									for(int m = 0; m < x_receptive; m++)
 									{
-										node_deriv_list->at(prev_node_index + n)->set(j+l, k+m,
+										node_deriv_list->at(last_node_index + n)->set(j+l, k+m,
 												input_deriv_vector->get(n*y_receptive*x_receptive + l*x_receptive + m, 0));
 									}
 								}
