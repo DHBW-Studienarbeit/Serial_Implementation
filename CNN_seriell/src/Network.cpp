@@ -22,8 +22,8 @@ Network::Network()
 	node_deriv_list = new vector<Matrix*>();
 	weight_deriv_list = new vector<Matrix*>();
 	bias_deriv_list = new vector<Matrix*>();
-	train_picture_container = new PictureContainer("./train", 1);
-	test_picture_container = new PictureContainer("./test", 1);
+	train_picture_container = new PictureContainer("./train", 55);
+	test_picture_container = new PictureContainer("./test", 10);
 }
 
 Network::~Network()
