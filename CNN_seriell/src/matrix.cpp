@@ -196,6 +196,58 @@ void Matrix::trans(){
 }
 
 /**
+ * results saved to Matrix b
+ */
+void Matrix::add(Matrix *a, Matrix *b){
+	if(a->getLength() == b->getLength() && a->getHeight() == b->getHeight()){
+		#pragma omp parallel for
+		for(int m=0; m < a->getHeight(); m++){
+			for(int n=0; n < a->getLength(); n++){
+				//addition of both arguments
+				b->set(m, n, a->get(m,n) + b->get(m, n));
+			}
+		}
+	}else{
+		std::cerr << "invalid arguments for matrix addition";
+	}
+}
+
+/**
+ * results saved to Matrix b
+ */
+void Matrix::sub(Matrix *a, Matrix *b){
+	if(a->getLength() == b->getLength() && a->getHeight() == b->getHeight()){
+		#pragma omp parallel for
+		for(int m=0; m < a->getHeight(); m++){
+			for(int n=0; n < a->getLength(); n++){
+				//addition of both arguments
+				b->set(m, n, a->get(m,n) - b->get(m, n));
+			}
+		}
+	}else{
+		std::cerr << "invalid arguments for matrix subtraction";
+	}
+}
+
+/**
+ * results saved to Matrix b
+ */
+void Matrix::mul(Matrix *a, Matrix *b){
+	if(a->getLength() == b->getHeight() && b->getLength() == 1){
+		#pragma omp parallel for
+		for(int m=0; m < b->getHeight(); m++){
+			float value=0;
+			for(int i=0; i<a->getLength(); i++){
+				value += (a->get(m, i));
+			}
+			b->set(m, 0, value);
+		}
+	}else{
+		std::cerr << "invalid arguments for matrix addition";
+	}
+}
+
+/**
  * Operator-Function for addition of two Matrixes
  * Matrixes have to be the same size
  * <param>Matrix &a - first Matrix</param>

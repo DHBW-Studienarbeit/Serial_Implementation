@@ -8,7 +8,7 @@
 #ifndef MATHEMATICS_H_
 #define MATHEMATICS_H_
 
-
+#include "matrix.hpp"
 
 namespace mathematics {
 
@@ -25,6 +25,7 @@ float cross_entropy(float *calculated, float *expected, int size);
 float get_cost(float *output, float *labels, int size);
 void get_cost_derivatives(float *output, float *labels, float *derivatives, int size);
 
+Matrix *conv(Matrix *weight, Matrix *node, Matrix *bias);
 }
 
 

@@ -27,6 +27,11 @@ public:
 	void copy_all(float* array);
 	void set_all(float* array);
 
+	//result saved to Matrix b
+	void mul(Matrix *a, Matrix *b);
+	void add(Matrix *a, Matrix *b);
+	void sub(Matrix *a, Matrix *b);
+
 private:
 	int length;
 	int height;

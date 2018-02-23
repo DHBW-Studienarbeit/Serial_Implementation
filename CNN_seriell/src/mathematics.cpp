@@ -7,6 +7,7 @@
 
 #include "mathematics.h"
 #include "math.h"
+#include <iostream>
 
 namespace mathematics {
 
@@ -79,6 +80,33 @@ void get_cost_derivatives(float *output, float *labels, float *derivatives, int 
 	for(; size>0; size--, output++, labels++, derivatives++)
 	{
 		*derivatives = *output - *labels;
+	}
+}
+
+/**
+ * Function for FullyConnected and Conv Layer.
+ *
+ * <param>Matrix *weight - Weight Matrix</param>
+ * <param>Matrix *node - Node Matrix, only length of 1</param>
+ * <param>Matrix *bias - Bias Matrix, only lengt of 1</param>
+ * <result>Matrix for Sigmoid-Function</result>
+ *
+ */
+Matrix *conv(Matrix *weight, Matrix *node, Matrix *bias){
+	if(weight->getLength() == node->getHeight() && bias->getHeight() == weight->getHeight() && bias->getLength() == 1){
+		Matrix *output = new Matrix(weight->getHeight(), 1);
+		#pragma omp parallel for
+		for(int m=0; m < weight->getHeight(); m++){
+			float value=0;
+			for(int i=0; i<weight->getLength(); i++){
+				value += (weight->get(m, i)*node->get(i,0));
+			}
+			output->set(m, 0, value+bias->get(m,0));
+		}
+		return output;
+	}else{
+		std::cerr << "invalid arguments for matrix conv" << weight->getLength() << node->getHeight() << bias->getHeight() << weight->getHeight() << bias->getLength();
+		return new Matrix(0,0);
 	}
 }
 

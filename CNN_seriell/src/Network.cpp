@@ -187,6 +187,7 @@ bool Network::generate_network()
 				}
 				else
 				{
+					std::cerr << "Pooling layer has to be behind a Convolutional layer";
 					return false;
 				}
 				break;
@@ -324,6 +325,7 @@ float Network::forward(float* labels)
 					int x_receptive = conv_layer->getXReceptive();
 					int y_receptive = conv_layer->getYReceptive();
 
+					//Jedes Element von Conv_Layer durchgehen
 					for(int j = 0; j < y_steps; j++)
 					{
 						for(int k = 0; k < x_steps; k++)
@@ -338,15 +340,14 @@ float Network::forward(float* labels)
 											node_list->at(input_layer->getNodeIndex())->get(j+l, k+m));
 								}
 							}
-
-							Matrix node_tmp = (*(weight_list->at(conv_layer->getWeightIndex()))) * (*node_vector);
-							Matrix node_results = node_tmp + (*(bias_list->at(conv_layer->getBiasIndex())));
+							Matrix *node_results = mathematics::conv(weight_list->at(conv_layer->getWeightIndex()), node_vector, bias_list->at(conv_layer->getBiasIndex()));
 							delete node_vector;
-							mathematics::sigmoid(node_results.get(), node_results.get(), no_feature_maps);
+							mathematics::sigmoid(node_results->get(), node_results->get(), no_feature_maps);
 							for(int h = 0; h < no_feature_maps; h++)
 							{
-								node_list->at(conv_layer->getNodeIndex()+h)->set(j, k, node_results.get(h,0));
+								node_list->at(conv_layer->getNodeIndex()+h)->set(j, k, node_results->get(h,0));
 							}
+							delete node_results;
 						}
 					}
 				}
@@ -363,6 +364,7 @@ float Network::forward(float* labels)
 					int prev_node_index = pooling_layer->getNodeIndex(); /* node_index is positioned at current node matrix,
 						this line calculates the index of the first matrix of the previous pooling layer */
 
+					//Jedes Element des Pooling Layers durch gehen
 					for(int j = 0; j < y_steps; j++)
 					{
 						for(int k = 0; k < x_steps; k++)
@@ -381,16 +383,14 @@ float Network::forward(float* labels)
 									}
 								}
 							}
-							Matrix node_tmp = (*(weight_list->at(conv_layer->getWeightIndex()))) * (*node_vector);
-							Matrix node_results = node_tmp + (*(bias_list->at(conv_layer->getBiasIndex())));
+							Matrix *node_results = mathematics::conv(weight_list->at(conv_layer->getWeightIndex()), node_vector, bias_list->at(conv_layer->getBiasIndex()));
 							delete node_vector;
-
-							mathematics::sigmoid(node_results.get(), node_results.get(), no_feature_maps_conv);
-
+							mathematics::sigmoid(node_results->get(), node_results->get(), no_feature_maps_conv);
 							for(int h = 0; h < no_feature_maps_conv; h++)
 							{
-								node_list->at(conv_layer->getNodeIndex()+h)->set(j, k, node_results.get(h,0));
+								node_list->at(conv_layer->getNodeIndex()+h)->set(j, k, node_results->get(h,0));
 							}
+							delete node_results;
 						}
 					}
 				}
@@ -466,9 +466,8 @@ float Network::forward(float* labels)
 							}
 						}
 					}
-					Matrix tmp = (*(weight_list->at(fully_layer->getWeightIndex()))) * (*full_conv_matrix);
-					Matrix node_results = tmp + (*(bias_list->at(fully_layer->getBiasIndex())));
-					mathematics::sigmoid(node_results.get(), node_list->at(fully_layer->getNodeIndex())->get(), tmp.getHeight());
+					Matrix *node_results = mathematics::conv(weight_list->at(fully_layer->getWeightIndex()), full_conv_matrix, bias_list->at(fully_layer->getBiasIndex()));
+					mathematics::sigmoid(node_results->get(), node_list->at(fully_layer->getNodeIndex())->get(), node_results->getHeight());
 
 					delete full_conv_matrix;
 				}
