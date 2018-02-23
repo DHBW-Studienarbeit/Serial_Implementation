@@ -14,6 +14,7 @@
 #include "matrix.hpp"
 #include <stdlib.h>
 #include <iostream>
+#include <omp.h>
 
 /**
  * Constructor for Class Matrix with no Values for Matrix
@@ -282,6 +283,7 @@ Matrix operator* (Matrix &a, Matrix &b){
 	if(a.getLength() == b.getHeight()){
 
 		//Alle Elemente der neuen Matrix durchgehen
+		#pragma omp parallel for
 		for(int m=0; m < c->getHeight(); m++){
 			for(int n=0; n < c->getLength(); n++){
 
