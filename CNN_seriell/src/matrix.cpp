@@ -64,7 +64,6 @@ void Matrix::copy_all(float* array)
 
 void Matrix::set_all_equal(float value)
 {
-	#pragma omp parallel for
 	for(int m=0; m<height; m++){
 		for(int n=0; n<length; n++){
 			set(m,n,value);
@@ -164,7 +163,6 @@ void Matrix::test(){
  * Function to fill the Matrix with Test-Values between 0 and 1
  */
 void Matrix::random(){
-	#pragma omp parallel for
 	for(int m=0; m<height; m++){
 		for(int n=0; n<length; n++){
 
@@ -181,7 +179,6 @@ void Matrix::trans(){
 
 	//Matrix *new_matrix = new Matrix(this->height , this->length);
 	float *new_data=new float[this->height * this->length];
-	#pragma omp parallel for
 	for(int m=0; m<height; m++){
 		for(int n=0; n<length; n++){
 			//addition of both arguments
@@ -205,7 +202,6 @@ void Matrix::trans(){
 Matrix operator+ (Matrix &a, Matrix &b){
 	Matrix *c = new Matrix(a.getHeight(), a.getLength());
 	if(a.getLength() == b.getLength() && a.getHeight() == b.getHeight()){
-		#pragma omp parallel for
 		for(int m=0; m<c->getHeight(); m++){
 			for(int n=0; n<c->getLength(); n++){
 				//addition of both arguments
@@ -229,7 +225,6 @@ Matrix operator+ (Matrix &a, Matrix &b){
 Matrix operator- (Matrix &a, Matrix &b){
 	Matrix *c = new Matrix(a.getHeight(), a.getLength());
 	if(a.getLength() == b.getLength() && a.getHeight() == b.getHeight()){
-		#pragma omp parallel for
 		for(int m=0; m<c->getHeight(); m++){
 			for(int n=0; n<c->getLength(); n++){
 				//addition of both arguments
@@ -252,7 +247,6 @@ Matrix operator- (Matrix &a, Matrix &b){
  */
 Matrix operator* (int a, Matrix &b){
 	Matrix *c = new Matrix(b.getHeight(), b.getLength());
-	#pragma omp parallel for
 	for(int m=0; m < c->getHeight(); m++){
 		for(int n=0; n < c->getLength(); n++){
 			//addition of both arguments
@@ -289,7 +283,6 @@ Matrix operator* (Matrix &a, Matrix &b){
 	if(a.getLength() == b.getHeight()){
 
 		//Alle Elemente der neuen Matrix durchgehen
-		#pragma omp parallel for
 		for(int m=0; m < c->getHeight(); m++){
 			for(int n=0; n < c->getLength(); n++){
 
