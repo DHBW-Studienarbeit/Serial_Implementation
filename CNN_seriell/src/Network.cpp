@@ -467,9 +467,9 @@ float Network::forward(float* labels)
 						}
 					}
 					Matrix *node_results = mathematics::conv(weight_list->at(fully_layer->getWeightIndex()), full_conv_matrix, bias_list->at(fully_layer->getBiasIndex()));
-					mathematics::sigmoid(node_results->get(), node_list->at(fully_layer->getNodeIndex())->get(), node_results->getHeight());
-
 					delete full_conv_matrix;
+					mathematics::sigmoid(node_results->get(), node_list->at(fully_layer->getNodeIndex())->get(), node_results->getHeight());
+					delete node_results;
 				}
 				else if (layer_list->at(i-1)->getLayerType() == POOLING_LAYER)
 				{
@@ -493,20 +493,19 @@ float Network::forward(float* labels)
 							}
 						}
 					}
-					Matrix tmp = (*(weight_list->at(fully_layer->getWeightIndex()))) * (*full_pool_matrix);
-					Matrix node_results = tmp + (*(bias_list->at(fully_layer->getBiasIndex())));
-					mathematics::sigmoid(node_results.get(), node_list->at(fully_layer->getNodeIndex())->get(), tmp.getHeight());
-
+					Matrix *node_results = mathematics::conv(weight_list->at(fully_layer->getWeightIndex()), full_pool_matrix, bias_list->at(fully_layer->getBiasIndex()));
 					delete full_pool_matrix;
+					mathematics::sigmoid(node_results->get(), node_list->at(fully_layer->getNodeIndex())->get(), node_results->getHeight());
+					delete node_results;
 
 				}
 				else if (layer_list->at(i-1)->getLayerType() == FULLY_CONNECTED_LAYER)
 				{
 					FullyConnected_Layer* fully_layer = (FullyConnected_Layer*) layer_list->at(i);
 					FullyConnected_Layer* last_layer = (FullyConnected_Layer*) layer_list->at(i-1);
-					Matrix tmp = (*weight_list->at(fully_layer->getWeightIndex())) * (*node_list->at(last_layer->getNodeIndex()));
-					Matrix node_results = tmp + (*(bias_list->at(fully_layer->getBiasIndex())));
-					mathematics::sigmoid(node_results.get(), node_list->at(fully_layer->getNodeIndex())->get(), tmp.getHeight());
+					Matrix *node_results = mathematics::conv(weight_list->at(fully_layer->getWeightIndex()), node_list->at(last_layer->getNodeIndex()), bias_list->at(fully_layer->getBiasIndex()));
+					mathematics::sigmoid(node_results->get(), node_list->at(fully_layer->getNodeIndex())->get(), node_results->getHeight());
+					delete node_results;
 				}
 				else
 				{
