@@ -56,9 +56,8 @@ void Matrix::copy_all(float* array)
 {
 	int i = 0;
 	for(int m=0; m<height; m++){
-		for(int n=0; n<length; n++){
+		for(int n=0; n<length; n++, i++){
 			set(m,n,array[i]);
-			i++;
 		}
 	}
 }
@@ -211,6 +210,7 @@ Matrix operator+ (Matrix &a, Matrix &b){
 		}
 		return *c;
 	}else{
+		std::cerr << "invalid arguments for matrix addition";
 		return *c;
 	}
 }
@@ -233,6 +233,7 @@ Matrix operator- (Matrix &a, Matrix &b){
 		}
 		return *c;
 	}else{
+		std::cerr << "\ninvalid arguments for matrix subtraction";
 		return *c;
 	}
 }
@@ -297,6 +298,7 @@ Matrix operator* (Matrix &a, Matrix &b){
 		return *c;
 
 	}else{
+		std::cerr << "\ninvalid arguments for matrix multiplication";
 		return *c;
 	}
 }
