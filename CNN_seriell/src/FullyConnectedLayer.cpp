@@ -49,9 +49,9 @@ void FullyConnected_Layer::backpropagate( Matrix* inputs,
 	{
 		for(int i=0; i<inputsize; i++)
 		{
-			weight_derivations->set(o,i, activation_derivations->get(o,0) * y_deriv_z->get(o,0) * inputdata[i] );
+			weight_derivations->set(o,i, activation_derivations->get(o,0) * y_deriv_z->get(o,0) * inputdata[i] + weight_derivations->get(o,i) );
 		}
-		bias_derivations->set(o,0, activation_derivations->get(o,0) * y_deriv_z->get(o,0) );
+		bias_derivations->set(o,0, activation_derivations->get(o,0) * y_deriv_z->get(o,0) + bias_derivations->get(o,0) );
 	}
 	// clean up locals
 	delete y_deriv_z;

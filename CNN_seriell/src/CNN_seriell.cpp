@@ -17,8 +17,8 @@
 #define CONV_SIZE_2_D			5
 #define CONV_STEP_1_D 			1
 #define CONV_STEP_2_D			1
-#define CONV_FEATURES_1_D		60
-#define CONV_FEATURES_2_D		80
+#define CONV_FEATURES_1_D		6
+#define CONV_FEATURES_2_D		8
 #define MAX_POOL_SIZE_1_D		2
 #define MAX_POOL_SIZE_2_D		2
 #define FULLY_CONNECTED_SIZE_D	10
